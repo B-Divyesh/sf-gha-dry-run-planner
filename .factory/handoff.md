@@ -1,86 +1,75 @@
-# Handoff — gha-dry-run-planner v0.1.0
+# Verification handoff — FAIL
 
-## What shipped
+**Candidate verified:** `a1b4aa816b3f57c179fecc9382a6c895f4b2a20e`
+**Live deployment verified:** https://gha-dry-run-planner.sociobot.in/
+**Full evidence:** `.factory/verification.md`
 
-- A typed Rust planning library plus the `ghaplan` single-binary CLI. It reads
-  explicit workflow paths, stdin, or `.github/workflows/*`; accepts synthetic
-  push/PR/dispatch/schedule/merge-group/workflow-run event data; and emits an
-  explained tree or stable `--json` output.
-- Static evaluation for ordered branch/path filters, event action types, core
-  GitHub expression operators and functions, `github`/`inputs`/`matrix`/
-  `needs`/`env` contexts, object-filter wildcards, matrix Cartesian expansion
-  with include/exclude, needs ordering, job and step conditions, resolved
-  `run:` templates, secret references, and permission declarations.
-- Explicit run, skip, unknown, and error states. `--strict` makes unknowns fail
-  CI with exit code 2. No workflow command, action, or secret is executed/read.
-- A responsive static product site and live browser planner in `dist/site`.
-  It supports paste, local file open, synthetic paths/branches/inputs/labels,
-  keyboard planning (Ctrl/Cmd+Enter), JSON copy, mobile layout, dark mode,
-  reduced motion, error/empty/offline states, and service-worker caching.
-- Product documentation, MIT license, changelog, a tiny typed public API, and
-  ready-to-package Cargo metadata. Privacy/terms routes are intentionally not
-  present because the free product has no account, payment, analytics,
-  tracking, upload, or persisted user data.
+## Status
 
-## Visual system and original asset
+**FAIL — do not release this candidate as an accurate GitHub Actions planner.**
+The Rust CLI and browser planner both wrongly skip a job with `needs` and
+`if: always()` when its dependency is skipped. GitHub Actions permits that job
+to run; this is a high-severity defect in the product's core promise to explain
+which jobs will run.
 
-The glacial minimal ceramics system is documented in `.factory/design.md`.
-The hero was generated specifically for this product via
-`/opt/fleet/lib/gen-image.sh` using the factory `gpt-image-2` deployment. The
-full prompt and generation metadata are in
-`.factory/assets/hero-ceramic-source.png.json`; the source is beside it. The
-site consumes original 84 KB and 25 KB responsive WebP derivatives. No
-third-party runtime fonts, scripts, or imagery are used.
+Minimal regression case:
 
-## Verification performed
+```yaml
+on: push
+jobs:
+  upstream:
+    if: false
+    steps: [{ run: echo upstream }]
+  cleanup:
+    needs: upstream
+    if: always()
+    steps: [{ run: echo cleanup }]
+```
 
-- `npm test`: pass — 6 Rust unit tests, 1 compiling Rust doctest, and 4 browser
-  engine tests.
-- `npm run build`: pass — optimized binary plus `dist/site/index.html`.
-- Production payload: 60.81 KB JS / 21.36 KB gzip, 13.91 KB CSS / 4.05 KB
-  gzip, 84 KB desktop hero, and 25 KB mobile hero.
-- `cargo package --allow-dirty`: pass. Final crate contents are limited to the
-  Rust sources and package documentation; the factory can publish with
-  `cargo package`/`cargo publish` when credentials are available.
-- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173 .factory/evidence`: pass;
-  HTTP 200, title/lang/main/one H1/alt labels valid, and zero console errors.
-- Playwright + axe audit: zero serious/critical findings in light and dark +
-  reduced-motion modes; interactive planning passed; 390 px horizontal
-  overflow was 0; an offline reload succeeded.
-- Lighthouse mobile (local production build): Performance 100,
-  Accessibility 100, Best Practices 100, SEO 100; LCP 1.2 s, CLS 0, total
-  blocking time 0 ms. Lab measurements vary by host.
+The candidate returns `cleanup: skip (dependency upstream did not succeed)` in
+both interfaces; expected behavior is that `cleanup` runs.
 
-## Run it
+## What passed
+
+- Clean `npm ci`, `npm test`, `npm run build`, `cargo fmt --check`, and
+  `cargo package --allow-dirty`.
+- Clean extracted-crate install, installed CLI JSON exercise, and a clean Rust
+  consumer of the public library API.
+- Normal, boundary path-filter, malformed-input, recovery, and explicit
+  unknown/`--strict` end-to-end scenarios.
+- Desktop and 390 px mobile planning, keyboard Ctrl/Cmd+Enter, visible focus,
+  reduced-motion behavior, zero serious/critical axe findings, zero observed
+  console/page errors, PWA offline reload, and same-origin-only browser
+  requests.
+- Production bundles are within budget (60,808 B JS, 13,905 B CSS; 24,652 B
+  mobile hero); live HTML/assets match the candidate build byte-for-byte and
+  have restrictive CSP/security headers and immutable hashed asset caching.
+
+## Remaining defects
+
+1. **High:** Fix `needs`/status-function semantics above in both engines and
+   add regression tests.
+2. **Medium:** At 390 px, wordmark/Source links and Expand all/Copy JSON
+   controls measure 36–39.7 px high, below the specified 44 px target.
+3. **Low:** Static checks are not clean: `cargo clippy --all-targets
+   --all-features -- -D warnings` fails on `clippy::map_flatten`, and an
+   explicit strict TypeScript no-emit check fails because `ImportMeta.env` is
+   undeclared (there is no repository typecheck script/configuration).
+
+## Verification commands
 
 ```sh
-npm install
+npm ci
 npm test
 npm run build
+npx tsc --noEmit --target ES2022 --moduleResolution bundler --module ESNext --strict site/src/app.ts site/src/engine.ts
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+npm run pack:cli
 npm run preview
+npm run audit:a11y
 ```
 
-CLI smoke test:
-
-```sh
-cargo run -- --event pull_request --base main --head feat --paths src/a.ts
-```
-
-## Known fidelity limits
-
-- `hashFiles()`, secret values, runner filesystem/state, live concurrency
-  cancellation, remote reusable workflows, and composite-action internals are
-  declared unknown rather than guessed.
-- `workflow_run` and a few undocumented GitHub expression/path-filter corners
-  remain best-effort. No static tool can determine outputs produced only by a
-  step that has not run.
-- The browser and Rust planners share fixtures and behavior but are separate
-  compact implementations; the Rust CLI is the automation-grade reference.
-
-## Recommended next steps
-
-1. Publish a versioned 200-expression conformance corpus and track fidelity
-   against GitHub's observed behavior.
-2. Add local reusable-workflow resolution and more event payload fields.
-3. Publish signed release binaries for macOS, Linux, and Windows after the
-   factory configures release credentials.
+After resolving the high-severity defect, rerun the independent verification
+and update this handoff to PASS only if that regression passes in both the CLI
+and browser engine.
