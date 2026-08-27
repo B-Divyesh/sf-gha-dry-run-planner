@@ -51,6 +51,11 @@ Completed for this repair:
   findings, zero console errors, no horizontal overflow, offline reload,
   reduced-motion/dark-mode checks, exact `always()` planner E2E, and measured
   target heights of 44 px for wordmark, Source, Expand all, and Copy JSON.
+- Standard static deployment completed. The live `index.html` SHA-256 matches
+  the local production build, `verify-url.sh` passed (HTTP 200, title/lang,
+  one H1, main landmark, image alt labels, and no console errors), and the
+  same live 390 px audit passed with the exact 44 px controls and `always()`
+  regression.
 
 ## Release notes
 
