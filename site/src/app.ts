@@ -83,6 +83,7 @@ function runPlanner() {
     base: ($('#base') as HTMLInputElement).value.trim() || undefined,
     head: ($('#head') as HTMLInputElement).value.trim() || undefined,
     paths: ($('#paths') as HTMLTextAreaElement).value.split(/\n|,/).map((value) => value.trim()).filter(Boolean),
+    labels: ($('#labels') as HTMLInputElement).value.split(',').map((value) => value.trim()).filter(Boolean),
     inputs: parseInputs(($('#inputs') as HTMLTextAreaElement).value),
   };
   result.setAttribute('aria-busy','true');

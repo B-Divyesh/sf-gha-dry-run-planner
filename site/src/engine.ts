@@ -2,7 +2,7 @@ import { load } from 'js-yaml';
 
 export type Outcome = 'run' | 'skip' | 'unknown' | 'error';
 export interface Decision { outcome: Outcome; reason: string; value?: unknown }
-export interface SyntheticEvent { name: string; action?: string; base?: string; head?: string; paths: string[]; inputs: Record<string, unknown> }
+export interface SyntheticEvent { name: string; action?: string; base?: string; head?: string; paths: string[]; labels?: string[]; inputs: Record<string, unknown> }
 export interface StepPlan { name: string; decision: Decision; run?: string; uses?: string }
 export interface MatrixPlan { values: Record<string, unknown>; steps: StepPlan[] }
 export interface JobPlan { id: string; name: string; needs: string[]; decision: Decision; cells: MatrixPlan[] }
@@ -163,7 +163,7 @@ function callFunction(name: string, args: unknown[]) {
 
 function makeContext(workflow: Obj, event: SyntheticEvent, matrix: Obj, results: Record<string,string>): Obj {
   const needs = Object.fromEntries(Object.entries(results).map(([id,result]) => [id,{result,outputs:{}}]));
-  return { github: { event_name:event.name, event:{action:event.action,inputs:event.inputs,pull_request:{base:{ref:event.base},head:{ref:event.head}}}, ref:`refs/heads/${event.head ?? ''}`, ref_name:event.head, base_ref:event.base, head_ref:event.head, repository:'local/repository', actor:'local' }, inputs:event.inputs, matrix, needs, env:workflow.env ?? {}, vars:{} };
+  return { github: { event_name:event.name, event:{action:event.action,inputs:event.inputs,pull_request:{base:{ref:event.base},head:{ref:event.head},labels:(event.labels ?? []).map(name => ({name}))}}, ref:`refs/heads/${event.head ?? ''}`, ref_name:event.head, base_ref:event.base, head_ref:event.head, repository:'local/repository', actor:'local' }, inputs:event.inputs, matrix, needs, env:workflow.env ?? {}, vars:{} };
 }
 
 function expandMatrix(matrix: unknown): Obj[] {

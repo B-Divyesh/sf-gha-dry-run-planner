@@ -4,5 +4,5 @@
   "artifact_class": "cli",
   "smallest_useful_product": "A local CLI and browser planner that evaluates triggers, filters, job and step if conditions, matrices, needs, expressions, secrets, and permissions without executing workflow steps.",
   "monetization": "free",
-  "state": "BUILDING"
+  "state": "BUILT"
 }
