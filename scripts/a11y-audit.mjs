@@ -15,6 +15,28 @@ await page.getByRole('button', { name: /Plan workflow/ }).click();
 await page.waitForTimeout(250);
 const resultText = await page.locator('#result').innerText();
 if (!resultText.includes('Pull request checks')) throw new Error(`Planner interaction failed: ${resultText.slice(0,300)}`);
+const targetHeights = await page.evaluate(() => Object.fromEntries([
+  ['wordmark', document.querySelector('.site-header .wordmark')],
+  ['source', document.querySelector('.repo-link')],
+  ['expand', document.querySelector('#expand-all')],
+  ['copy', document.querySelector('#copy-json')],
+].map(([name, element]) => [name, Math.round(element.getBoundingClientRect().height)])));
+if (Object.values(targetHeights).some((height) => height < 44)) throw new Error(`Controls below 44px: ${JSON.stringify(targetHeights)}`);
+await page.locator('#event').selectOption('push');
+await page.locator('#workflow-source').fill(`name: Needs always
+on: push
+jobs:
+  upstream:
+    if: false
+    steps: [{ run: echo upstream }]
+  cleanup:
+    needs: upstream
+    if: always()
+    steps: [{ run: echo cleanup }]
+`);
+await page.getByRole('button', { name: /Plan workflow/ }).click();
+const cleanup = await page.locator('summary').filter({ hasText: 'cleanup' }).innerText();
+if (!cleanup.includes('Job if evaluated to true.')) throw new Error(`always() regression: ${cleanup}`);
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 const lightReport = await new AxeBuilder({ page }).analyze();
 await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
@@ -26,7 +48,7 @@ await page.reload({ waitUntil: 'domcontentloaded' });
 const offlineReload = (await page.title()).includes('ghaplan');
 await context.setOffline(false);
 const seriousOrCritical = [...lightReport.violations, ...darkReport.violations].filter(v => ['serious','critical'].includes(v.impact ?? ''));
-const output = { seriousOrCritical, themesChecked: ['light','dark + reduced motion'], offlineReload, consoleErrors: errors, horizontalOverflow: overflow };
+const output = { seriousOrCritical, themesChecked: ['light','dark + reduced motion'], offlineReload, consoleErrors: errors, horizontalOverflow: overflow, targetHeights };
 console.log(JSON.stringify(output, null, 2));
 await browser.close();
 if (output.seriousOrCritical.length || errors.length || overflow > 1 || !offlineReload) process.exit(1);

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --config site/vite.config.ts",
     "test": "cargo test && vitest run --config site/vitest.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "build:site": "vite build --config site/vite.config.ts",
     "build": "cargo build --release && npm run build:site",
     "preview": "vite preview --config site/vite.config.ts",

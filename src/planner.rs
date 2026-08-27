@@ -1,4 +1,4 @@
-use crate::expression::{evaluate, EvalResult};
+use crate::expression::{evaluate, evaluate_with_metadata, EvalResult};
 use globset::Glob;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -344,13 +344,14 @@ fn plan_jobs(
         let blocked = needs
             .iter()
             .find(|n| results.get(*n).and_then(JsonValue::as_str) != Some("success"));
-        let base_context = build_context(event, options, root, None, &results);
+        let mut base_context = build_context(event, options, root, None, &results);
+        add_job_status_context(&mut base_context, &needs, &results);
         let job_if = scalar(map_get(job, "if")).unwrap_or_else(|| "success()".into());
-        let mut decision = if let Some(need) = blocked {
-            Decision::skip(format!("dependency {need} did not succeed"))
-        } else {
-            expression_decision(&job_if, &base_context, "job if")
-        };
+        let (mut decision, has_status_function) =
+            expression_decision(&job_if, &base_context, "job if");
+        if let Some(need) = blocked.filter(|_| !has_status_function) {
+            decision = Decision::skip(format!("dependency {need} did not succeed"));
+        }
         let name = scalar(map_get(job, "name")).unwrap_or_else(|| id.clone());
         let permissions = parse_permissions(map_get(job, "permissions"));
         let effective_permissions = if permissions.is_empty() {
@@ -440,7 +441,7 @@ fn plan_steps(job: &Mapping, context: &JsonValue) -> Vec<StepPlan> {
                 })
                 .unwrap_or_else(|| format!("Step {}", index + 1));
             let condition = scalar(map_get(step, "if")).unwrap_or_else(|| "success()".into());
-            let decision = expression_decision(&condition, context, "step if");
+            let (decision, _) = expression_decision(&condition, context, "step if");
             let resolved_run = run.map(|r| resolve_templates(&r, context));
             StepPlan {
                 index: index + 1,
@@ -454,9 +455,9 @@ fn plan_steps(job: &Mapping, context: &JsonValue) -> Vec<StepPlan> {
         .collect()
 }
 
-fn expression_decision(source: &str, context: &JsonValue, label: &str) -> Decision {
-    let result = evaluate(source, context);
-    match result.truthy() {
+fn expression_decision(source: &str, context: &JsonValue, label: &str) -> (Decision, bool) {
+    let (result, has_status_function) = evaluate_with_metadata(source, context);
+    let decision = match result.truthy() {
         Some(true) => Decision {
             outcome: Outcome::Run,
             reason: format!("{label} evaluated to true"),
@@ -480,7 +481,28 @@ fn expression_decision(source: &str, context: &JsonValue, label: &str) -> Decisi
             },
             _ => unreachable!(),
         },
-    }
+    };
+    (decision, has_status_function)
+}
+
+fn add_job_status_context(
+    context: &mut JsonValue,
+    needs: &[String],
+    results: &BTreeMap<String, JsonValue>,
+) {
+    let outcomes: Vec<&str> = needs
+        .iter()
+        .filter_map(|need| results.get(need).and_then(JsonValue::as_str))
+        .collect();
+    let status = json!({
+        "success": outcomes.iter().all(|outcome| *outcome == "success"),
+        "failure": outcomes.contains(&"failure"),
+        "cancelled": outcomes.contains(&"cancelled"),
+    });
+    context
+        .as_object_mut()
+        .expect("planner contexts are JSON objects")
+        .insert("__ghaplan_status".into(), status);
 }
 
 fn build_context(
@@ -837,5 +859,40 @@ jobs:
             &PlanOptions::default(),
         );
         assert_eq!(plan.decision.outcome, Outcome::Error);
+    }
+
+    #[test]
+    fn always_runs_after_a_skipped_need() {
+        let workflow = r#"
+name: Needs always
+on: push
+jobs:
+  upstream:
+    if: false
+    steps:
+      - run: echo upstream
+  cleanup:
+    needs: upstream
+    if: always()
+    steps:
+      - run: echo cleanup
+"#;
+        let event = Event {
+            name: "push".into(),
+            action: None,
+            base: None,
+            head: Some("main".into()),
+            git_ref: None,
+            paths: vec![],
+            labels: vec![],
+            inputs: BTreeMap::new(),
+        };
+        let plan = plan_workflow(workflow, &event, &PlanOptions::default());
+        assert_eq!(plan.jobs[0].decision.outcome, Outcome::Skip);
+        assert_eq!(plan.jobs[1].decision.outcome, Outcome::Run);
+        assert_eq!(
+            plan.jobs[1].matrix[0].steps[0].decision.outcome,
+            Outcome::Run
+        );
     }
 }

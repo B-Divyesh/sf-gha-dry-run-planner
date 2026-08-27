@@ -1,75 +1,67 @@
-# Verification handoff — FAIL
+# Handoff — gha-dry-run-planner repair
 
-**Candidate verified:** `a1b4aa816b3f57c179fecc9382a6c895f4b2a20e`
-**Live deployment verified:** https://gha-dry-run-planner.sociobot.in/
-**Full evidence:** `.factory/verification.md`
+**Base reviewed:** `95bbe9a581d51d3c508c8dba7182b898a56def57`
+**Deployment:** https://gha-dry-run-planner.sociobot.in/
 
-## Status
+## What changed
 
-**FAIL — do not release this candidate as an accurate GitHub Actions planner.**
-The Rust CLI and browser planner both wrongly skip a job with `needs` and
-`if: always()` when its dependency is skipped. GitHub Actions permits that job
-to run; this is a high-severity defect in the product's core promise to explain
-which jobs will run.
+- Corrected job-level `needs` gating in the Rust CLI/library and browser
+  engine. A job condition is evaluated first; the implicit dependency
+  `success()` gate applies only when the condition has no status function.
+  Consequently, a cleanup job with `needs: upstream` and `if: always()` runs
+  when `upstream` is skipped, matching GitHub Actions behavior.
+- Status functions now read planner job status context (`always`, `success`,
+  `failure`, and `cancelled`) rather than treating every status check as a
+  fixed value. Step conditions retain their existing per-step success behavior.
+- Added identical Rust and browser-engine regressions for the skipped-upstream
+  `always()` workflow, plus a browser production E2E assertion for it.
+- Raised the 390 px wordmark, Source link, Expand all, and Copy JSON controls
+  to at least 44 CSS px. The E2E audit measures all four.
+- Replaced the Clippy `map(...).flatten()` warning with `and_then`, and added a
+  strict `npm run typecheck` gate with Vite `ImportMeta.env` typing.
 
-Minimal regression case:
+## Verification
 
-```yaml
-on: push
-jobs:
-  upstream:
-    if: false
-    steps: [{ run: echo upstream }]
-  cleanup:
-    needs: upstream
-    if: always()
-    steps: [{ run: echo cleanup }]
-```
-
-The candidate returns `cleanup: skip (dependency upstream did not succeed)` in
-both interfaces; expected behavior is that `cleanup` runs.
-
-## What passed
-
-- Clean `npm ci`, `npm test`, `npm run build`, `cargo fmt --check`, and
-  `cargo package --allow-dirty`.
-- Clean extracted-crate install, installed CLI JSON exercise, and a clean Rust
-  consumer of the public library API.
-- Normal, boundary path-filter, malformed-input, recovery, and explicit
-  unknown/`--strict` end-to-end scenarios.
-- Desktop and 390 px mobile planning, keyboard Ctrl/Cmd+Enter, visible focus,
-  reduced-motion behavior, zero serious/critical axe findings, zero observed
-  console/page errors, PWA offline reload, and same-origin-only browser
-  requests.
-- Production bundles are within budget (60,808 B JS, 13,905 B CSS; 24,652 B
-  mobile hero); live HTML/assets match the candidate build byte-for-byte and
-  have restrictive CSP/security headers and immutable hashed asset caching.
-
-## Remaining defects
-
-1. **High:** Fix `needs`/status-function semantics above in both engines and
-   add regression tests.
-2. **Medium:** At 390 px, wordmark/Source links and Expand all/Copy JSON
-   controls measure 36–39.7 px high, below the specified 44 px target.
-3. **Low:** Static checks are not clean: `cargo clippy --all-targets
-   --all-features -- -D warnings` fails on `clippy::map_flatten`, and an
-   explicit strict TypeScript no-emit check fails because `ImportMeta.env` is
-   undeclared (there is no repository typecheck script/configuration).
-
-## Verification commands
+Run from a clean checkout:
 
 ```sh
 npm ci
+npm run typecheck
 npm test
-npm run build
-npx tsc --noEmit --target ES2022 --moduleResolution bundler --module ESNext --strict site/src/app.ts site/src/engine.ts
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
+npm run build
 npm run pack:cli
 npm run preview
 npm run audit:a11y
 ```
 
-After resolving the high-severity defect, rerun the independent verification
-and update this handoff to PASS only if that regression passes in both the CLI
-and browser engine.
+Completed for this repair:
+
+- Clean `npm ci`; strict TypeScript check; `npm test` (7 Rust unit tests, one
+  Rust doctest, and 5 browser-engine tests); `cargo fmt --check`; and strict
+  Clippy all passed.
+- Production CLI E2E passed for the exact skipped-upstream `if: always()`
+  reproducer: `upstream=skip`, `cleanup=run`, and its cleanup step runs.
+- `npm run build` produced `dist/site`; `npm run pack:cli` produced a
+  registry-ready crate. The extracted crate installed successfully and its
+  `ghaplan --version` command passed. A fresh Rust consumer compiled and ran
+  against `plan_workflow`, `Event`, `PlanOptions`, `Outcome`, and `evaluate`.
+- Local production browser audit passed at 390×844: zero serious/critical axe
+  findings, zero console errors, no horizontal overflow, offline reload,
+  reduced-motion/dark-mode checks, exact `always()` planner E2E, and measured
+  target heights of 44 px for wordmark, Source, Expand all, and Copy JSON.
+
+## Release notes
+
+The site is static, has no runtime CDN or telemetry, and is deployed with the
+factory Standard Static Web Apps flow. The crate is ready for the factory to
+publish with `cargo package` / `cargo publish`; no registry publishing was
+performed here.
+
+## Known fidelity limits
+
+This remains a no-execution planner. It does not discover runner failures or
+cancellations from a live run, execute steps, read secret values, evaluate
+`hashFiles()`, load remote reusable workflows, or observe live concurrency.
+Those cases remain explicit static limits rather than guesses.

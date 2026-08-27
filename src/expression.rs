@@ -19,26 +19,43 @@ impl EvalResult {
 }
 
 pub fn evaluate(source: &str, context: &Value) -> EvalResult {
+    evaluate_with_metadata(source, context).0
+}
+
+/// Evaluate an expression and note whether it explicitly calls a status function.
+///
+/// GitHub Actions adds an implicit `success()` gate to job conditions unless
+/// the condition contains a status check function. The planner uses this
+/// metadata to model that gate without treating text in a string literal as a
+/// status function.
+pub(crate) fn evaluate_with_metadata(source: &str, context: &Value) -> (EvalResult, bool) {
     let trimmed = source.trim();
     let expr = trimmed
         .strip_prefix("${{")
         .and_then(|v| v.strip_suffix("}}"))
         .map(str::trim)
         .unwrap_or(trimmed);
-    match Parser::new(expr, context).and_then(|mut p| {
-        let value = p.parse_or()?;
-        if !matches!(p.current, Token::End) {
-            return Err(format!("unexpected token {}", p.current.describe()));
+    let mut parser = match Parser::new(expr, context) {
+        Ok(parser) => parser,
+        Err(message) => return (EvalResult::Error { message }, false),
+    };
+    let parsed = (|| {
+        let value = parser.parse_or()?;
+        if !matches!(parser.current, Token::End) {
+            return Err(format!("unexpected token {}", parser.current.describe()));
         }
         Ok(value)
-    }) {
+    })();
+    let used_status_function = parser.used_status_function;
+    let result = match parsed {
         Ok(EValue::Known(value)) => EvalResult::Known {
             display: display(&value),
             value,
         },
         Ok(EValue::Unknown(reason)) => EvalResult::Unknown { reason },
         Err(message) => EvalResult::Error { message },
-    }
+    };
+    (result, used_status_function)
 }
 
 #[derive(Clone, Debug)]
@@ -213,6 +230,7 @@ struct Parser<'a> {
     lexer: Lexer<'a>,
     current: Token,
     context: &'a Value,
+    used_status_function: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -223,6 +241,7 @@ impl<'a> Parser<'a> {
             lexer,
             current,
             context,
+            used_status_function: false,
         })
     }
     fn bump(&mut self) -> Result<Token, String> {
@@ -360,6 +379,12 @@ impl<'a> Parser<'a> {
         Ok(EValue::Known(value))
     }
     fn parse_call(&mut self, name: &str) -> Result<EValue, String> {
+        if matches!(
+            name.to_ascii_lowercase().as_str(),
+            "always" | "success" | "failure" | "cancelled"
+        ) {
+            self.used_status_function = true;
+        }
         self.bump()?;
         let mut args = Vec::new();
         if self.current != Token::RParen {
@@ -375,7 +400,7 @@ impl<'a> Parser<'a> {
         if self.bump()? != Token::RParen {
             return Err("expected ')' after function arguments".into());
         }
-        call(name, args)
+        call(name, args, self.context)
     }
 }
 
@@ -405,8 +430,7 @@ fn compare(left: EValue, right: EValue, op: Token) -> EValue {
     let eq = equal(&a, &b);
     let ordering = numeric(&a)
         .zip(numeric(&b))
-        .map(|(x, y)| x.partial_cmp(&y))
-        .flatten()
+        .and_then(|(x, y)| x.partial_cmp(&y))
         .or_else(|| {
             Some(
                 display(&a)
@@ -425,7 +449,7 @@ fn compare(left: EValue, right: EValue, op: Token) -> EValue {
     })
 }
 
-fn call(name: &str, args: Vec<EValue>) -> Result<EValue, String> {
+fn call(name: &str, args: Vec<EValue>, context: &Value) -> Result<EValue, String> {
     if let Some(reason) = args.iter().find_map(|a| {
         if let EValue::Unknown(r) = a {
             Some(r.clone())
@@ -494,8 +518,10 @@ fn call(name: &str, args: Vec<EValue>) -> Result<EValue, String> {
         "fromjson" => serde_json::from_str::<Value>(&display(&arg(0)?))
             .map(EValue::Known)
             .map_err(|e| format!("fromJSON: {e}")),
-        "always" | "success" => Ok(EValue::known(true)),
-        "failure" | "cancelled" => Ok(EValue::known(false)),
+        "always" => Ok(EValue::known(true)),
+        "success" => Ok(EValue::known(status_value(context, "success", true))),
+        "failure" => Ok(EValue::known(status_value(context, "failure", false))),
+        "cancelled" => Ok(EValue::known(status_value(context, "cancelled", false))),
         "hashfiles" => Ok(EValue::Unknown(
             "hashFiles() requires repository file access and is not evaluated".into(),
         )),
@@ -503,6 +529,15 @@ fn call(name: &str, args: Vec<EValue>) -> Result<EValue, String> {
             "function {name}() is not supported"
         ))),
     }
+}
+
+fn status_value(context: &Value, name: &str, default: bool) -> bool {
+    context
+        .get("__ghaplan_status")
+        .and_then(Value::as_object)
+        .and_then(|status| status.get(name))
+        .and_then(Value::as_bool)
+        .unwrap_or(default)
 }
 
 fn truthy(value: &Value) -> bool {

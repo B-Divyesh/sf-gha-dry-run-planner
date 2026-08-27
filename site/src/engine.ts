@@ -30,8 +30,9 @@ export function planWorkflow(source: string, event: SyntheticEvent): BrowserPlan
       const job = raw as Obj;
       const needs = list(job.needs);
       const blocked = needs.find((need) => results[need] !== 'success');
-      const context = makeContext(workflow, event, {}, results);
-      const jobDecision = blocked ? decision('skip', `Dependency ${blocked} did not succeed.`) : expressionDecision(job.if ?? 'success()', context, 'Job if');
+      const context = makeContext(workflow, event, {}, results, needs);
+      let jobDecision = expressionDecision(job.if ?? 'success()', context, 'Job if');
+      if (blocked && !jobDecision.statusFunction) jobDecision = { ...decision('skip', `Dependency ${blocked} did not succeed.`), statusFunction: false };
       const cells: MatrixPlan[] = [];
       if (jobDecision.outcome === 'run' || jobDecision.outcome === 'unknown') {
         const matrices = expandMatrix(job.strategy?.matrix);
@@ -80,21 +81,23 @@ function triggerDecision(on: unknown, event: SyntheticEvent): Decision {
   return decision('run', `${event.name} matched all configured trigger filters.`);
 }
 
-function expressionDecision(source: unknown, context: Obj, label: string): Decision {
+function expressionDecision(source: unknown, context: Obj, label: string): Decision & { statusFunction: boolean } {
   const result = evaluateExpression(String(source), context);
-  if (result.unknown) return decision('unknown', result.unknown);
-  if (result.error) return decision('error', result.error);
-  return truthy(result.value) ? decision('run', `${label} evaluated to true.`, result.value) : decision('skip', `${label} evaluated to false.`, result.value);
+  if (result.unknown) return { ...decision('unknown', result.unknown), statusFunction: result.statusFunction ?? false };
+  if (result.error) return { ...decision('error', result.error), statusFunction: result.statusFunction ?? false };
+  return { ...(truthy(result.value) ? decision('run', `${label} evaluated to true.`, result.value) : decision('skip', `${label} evaluated to false.`, result.value)), statusFunction: result.statusFunction ?? false };
 }
 
-export function evaluateExpression(raw: string, context: Obj): { value?: unknown; unknown?: string; error?: string } {
+export function evaluateExpression(raw: string, context: Obj): { value?: unknown; unknown?: string; error?: string; statusFunction?: boolean } {
   const source = raw.trim().replace(/^\$\{\{\s*/, '').replace(/\s*\}\}$/, '');
-  try { return { value: new ExpressionParser(tokenize(source), context).parse() }; }
-  catch (error) { const message = error instanceof Error ? error.message : String(error); return message.startsWith('Unknown:') ? { unknown: message.slice(8) } : { error: message }; }
+  const parser = new ExpressionParser(tokenize(source), context);
+  try { return { value: parser.parse(), statusFunction: parser.statusFunction }; }
+  catch (error) { const message = error instanceof Error ? error.message : String(error); return message.startsWith('Unknown:') ? { unknown: message.slice(8), statusFunction: parser.statusFunction } : { error: message, statusFunction: parser.statusFunction }; }
 }
 
 class ExpressionParser {
   private index = 0;
+  statusFunction = false;
   constructor(private tokens: Token[], private context: Obj) {}
   parse(): unknown { const value = this.or(); if (this.peek().type !== 'end') throw new Error(`Unexpected token ${this.peek().type}.`); return value }
   private or(): unknown { let value = this.and(); while (this.take('or')) { const right = this.and(); value = truthy(value) || truthy(right) } return value }
@@ -107,7 +110,7 @@ class ExpressionParser {
     if (token.type === 'lparen') { const value = this.or(); this.expect('rparen'); return value }
     if (token.type !== 'ident') throw new Error(`Expected a value, found ${token.type}.`);
     const name = String(token.value);
-    if (this.take('lparen')) { const args: unknown[] = []; if (this.peek().type !== 'rparen') do { args.push(this.or()) } while (this.take('comma')); this.expect('rparen'); return callFunction(name,args) }
+    if (this.take('lparen')) { const args: unknown[] = []; if (this.peek().type !== 'rparen') do { args.push(this.or()) } while (this.take('comma')); this.expect('rparen'); if (['always','success','failure','cancelled'].includes(name.toLowerCase())) this.statusFunction = true; return this.callFunction(name,args) }
     const path = [name];
     while (this.take('dot')) { const part = this.tokens[this.index++]; if (part.type !== 'ident') throw new Error('Expected a property name.'); path.push(String(part.value)) }
     let value: any = this.context;
@@ -127,6 +130,24 @@ class ExpressionParser {
   private peek() { return this.tokens[this.index] }
   private take(type: string) { if (this.peek().type === type) { this.index++; return true } return false }
   private expect(type: string) { if (!this.take(type)) throw new Error(`Expected ${type}.`) }
+  private callFunction(name: string, args: unknown[]) {
+    switch (name.toLowerCase()) {
+      case 'contains': return Array.isArray(args[0]) ? args[0].some((v) => eq(v,args[1])) : display(args[0]).toLowerCase().includes(display(args[1]).toLowerCase());
+      case 'startswith': return display(args[0]).toLowerCase().startsWith(display(args[1]).toLowerCase());
+      case 'endswith': return display(args[0]).toLowerCase().endsWith(display(args[1]).toLowerCase());
+      case 'fromjson': return JSON.parse(display(args[0]));
+      case 'tojson': return JSON.stringify(args[0]);
+      case 'join': return Array.isArray(args[0]) ? args[0].map(display).join(display(args[1] ?? ',')) : '';
+      case 'format': return args.slice(1).reduce((text,value,index) => String(text).replaceAll(`{${index}}`,display(value)), display(args[0]));
+      case 'always': return true;
+      case 'success': return this.statusValue('success', true);
+      case 'failure': return this.statusValue('failure', false);
+      case 'cancelled': return this.statusValue('cancelled', false);
+      case 'hashfiles': throw new Error('Unknown:hashFiles() requires repository file access.');
+      default: throw new Error(`Unknown:Function ${name}() is not supported.`);
+    }
+  }
+  private statusValue(name: string, fallback: boolean) { const value = this.context.__ghaplan_status?.[name]; return typeof value === 'boolean' ? value : fallback }
 }
 
 function tokenize(source: string): Token[] {
@@ -145,25 +166,10 @@ function tokenize(source: string): Token[] {
   return [...out,{type:'end'}];
 }
 
-function callFunction(name: string, args: unknown[]) {
-  switch (name.toLowerCase()) {
-    case 'contains': return Array.isArray(args[0]) ? args[0].some((v) => eq(v,args[1])) : display(args[0]).toLowerCase().includes(display(args[1]).toLowerCase());
-    case 'startswith': return display(args[0]).toLowerCase().startsWith(display(args[1]).toLowerCase());
-    case 'endswith': return display(args[0]).toLowerCase().endsWith(display(args[1]).toLowerCase());
-    case 'fromjson': return JSON.parse(display(args[0]));
-    case 'tojson': return JSON.stringify(args[0]);
-    case 'join': return Array.isArray(args[0]) ? args[0].map(display).join(display(args[1] ?? ',')) : '';
-    case 'format': return args.slice(1).reduce((text,value,index) => String(text).replaceAll(`{${index}}`,display(value)), display(args[0]));
-    case 'always': case 'success': return true;
-    case 'failure': case 'cancelled': return false;
-    case 'hashfiles': throw new Error('Unknown:hashFiles() requires repository file access.');
-    default: throw new Error(`Unknown:Function ${name}() is not supported.`);
-  }
-}
-
-function makeContext(workflow: Obj, event: SyntheticEvent, matrix: Obj, results: Record<string,string>): Obj {
+function makeContext(workflow: Obj, event: SyntheticEvent, matrix: Obj, results: Record<string,string>, jobNeeds: string[] = []): Obj {
   const needs = Object.fromEntries(Object.entries(results).map(([id,result]) => [id,{result,outputs:{}}]));
-  return { github: { event_name:event.name, event:{action:event.action,inputs:event.inputs,pull_request:{base:{ref:event.base},head:{ref:event.head},labels:(event.labels ?? []).map(name => ({name}))}}, ref:`refs/heads/${event.head ?? ''}`, ref_name:event.head, base_ref:event.base, head_ref:event.head, repository:'local/repository', actor:'local' }, inputs:event.inputs, matrix, needs, env:workflow.env ?? {}, vars:{} };
+  const outcomes = jobNeeds.map((need) => results[need]).filter((outcome): outcome is string => outcome !== undefined);
+  return { github: { event_name:event.name, event:{action:event.action,inputs:event.inputs,pull_request:{base:{ref:event.base},head:{ref:event.head},labels:(event.labels ?? []).map(name => ({name}))}}, ref:`refs/heads/${event.head ?? ''}`, ref_name:event.head, base_ref:event.base, head_ref:event.head, repository:'local/repository', actor:'local' }, inputs:event.inputs, matrix, needs, env:workflow.env ?? {}, vars:{}, __ghaplan_status:{success:outcomes.every((outcome) => outcome === 'success'),failure:outcomes.includes('failure'),cancelled:outcomes.includes('cancelled')} };
 }
 
 function expandMatrix(matrix: unknown): Obj[] {

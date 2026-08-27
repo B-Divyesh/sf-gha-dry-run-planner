@@ -32,4 +32,19 @@ jobs:
   it('reports YAML failures', () => expect(planWorkflow('jobs: [',event).decision.outcome).toBe('error'));
   it('declares unknown context values', () => expect(evaluateExpression("secrets.TOKEN != ''",{}).unknown).toContain('secrets.TOKEN'));
   it('evaluates object filter wildcards', () => expect(evaluateExpression("contains(github.event.pull_request.labels.*.name, 'ready')",{github:{event:{pull_request:{labels:[{name:'ready'},{name:'docs'}]}}}}).value).toBe(true));
+  it('runs always() cleanup after a skipped need', () => {
+    const plan = planWorkflow(`name: Needs always
+on: push
+jobs:
+  upstream:
+    if: false
+    steps: [{ run: echo upstream }]
+  cleanup:
+    needs: upstream
+    if: always()
+    steps: [{ run: echo cleanup }]
+`, { name: 'push', paths: [], inputs: {} });
+    expect(plan.jobs.map((job) => job.decision.outcome)).toEqual(['skip', 'run']);
+    expect(plan.jobs[1].cells[0].steps[0].decision.outcome).toBe('run');
+  });
 });

@@ -10,6 +10,10 @@ triggers, ordered branch/path filters, `if:` expressions, matrix expansion,
 The static browser planner runs at <https://gha-dry-run-planner.sociobot.in>;
 workflow text stays in the tab and no analytics are collected.
 
+At job level, `ghaplan` models GitHub's implicit `success()` dependency gate.
+An explicit status check such as `if: always()` is evaluated against the
+`needs` results, so cleanup jobs can run after a skipped dependency.
+
 ## Install
 
 Until the first registry release, build the single binary from source:
@@ -109,6 +113,7 @@ edge cases, so compare high-risk release rules against GitHub's documentation.
 npm install
 npm run dev          # browser planner
 npm test             # Rust + browser-engine tests
+npm run typecheck     # strict browser TypeScript check
 npm run build        # release CLI + static site in dist/site
 npm run preview
 npm run pack:cli     # registry-ready crate validation/package
