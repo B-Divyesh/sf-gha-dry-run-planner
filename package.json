@@ -1,0 +1,26 @@
+{
+  "name": "gha-dry-run-planner-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config site/vite.config.ts",
+    "test": "cargo test && vitest run --config site/vitest.config.ts",
+    "build:site": "vite build --config site/vite.config.ts",
+    "build": "cargo build --release && npm run build:site",
+    "preview": "vite preview --config site/vite.config.ts",
+    "audit:a11y": "node scripts/a11y-audit.mjs http://127.0.0.1:4173",
+    "pack:cli": "cargo package --allow-dirty"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@types/js-yaml": "^4.0.9",
+    "playwright": "^1.62.1",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
+  }
+}

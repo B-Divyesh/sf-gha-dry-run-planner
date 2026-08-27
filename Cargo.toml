@@ -6,6 +6,7 @@ description = "Explain which GitHub Actions workflows, jobs, and steps will run 
 license = "MIT"
 repository = "https://github.com/B-Divyesh/sf-gha-dry-run-planner"
 readme = "README.md"
+include = ["src/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE", "CHANGELOG.md"]
 keywords = ["github-actions", "dry-run", "ci", "workflow"]
 categories = ["command-line-utilities", "development-tools"]
 
@@ -28,4 +29,3 @@ serde_yaml = "0.9"
 
 [dev-dependencies]
 tempfile = "3.20"
-

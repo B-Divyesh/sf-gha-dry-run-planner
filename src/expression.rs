@@ -315,11 +315,11 @@ impl<'a> Parser<'a> {
                 break;
             }
         }
-        let mut value = self.context;
+        let mut value = self.context.clone();
         for part in &path {
-            value = match value {
+            value = match &value {
                 Value::Object(map) => match map.get(part) {
-                    Some(v) => v,
+                    Some(v) => v.clone(),
                     None => {
                         return Ok(EValue::Unknown(format!(
                             "{} is not declared in this synthetic event",
@@ -327,15 +327,28 @@ impl<'a> Parser<'a> {
                         )))
                     }
                 },
-                Value::Array(a) => match part.parse::<usize>().ok().and_then(|i| a.get(i)) {
-                    Some(v) => v,
-                    None => {
-                        return Ok(EValue::Unknown(format!(
-                            "{} is unavailable",
-                            path.join(".")
-                        )))
+                Value::Array(_) if part == "*" => value.clone(),
+                Value::Array(items) => {
+                    if let Some(item) = part.parse::<usize>().ok().and_then(|i| items.get(i)) {
+                        item.clone()
+                    } else {
+                        let projected: Vec<Value> = items
+                            .iter()
+                            .filter_map(|item| {
+                                item.as_object()
+                                    .and_then(|object| object.get(part))
+                                    .cloned()
+                            })
+                            .collect();
+                        if projected.is_empty() {
+                            return Ok(EValue::Unknown(format!(
+                                "{} is unavailable",
+                                path.join(".")
+                            )));
+                        }
+                        Value::Array(projected)
                     }
-                },
+                }
                 _ => {
                     return Ok(EValue::Unknown(format!(
                         "{} cannot be resolved",
@@ -344,7 +357,7 @@ impl<'a> Parser<'a> {
                 }
             };
         }
-        Ok(EValue::Known(value.clone()))
+        Ok(EValue::Known(value))
     }
     fn parse_call(&mut self, name: &str) -> Result<EValue, String> {
         self.bump()?;
@@ -553,5 +566,17 @@ mod tests {
             evaluate("secrets.TOKEN != ''", &json!({})),
             EvalResult::Unknown { .. }
         ));
+    }
+    #[test]
+    fn supports_object_filter_wildcards() {
+        let ctx = json!({"github":{"event":{"pull_request":{"labels":[{"name":"ready"},{"name":"docs"}]}}}});
+        assert_eq!(
+            evaluate(
+                "contains(github.event.pull_request.labels.*.name, 'ready')",
+                &ctx
+            )
+            .truthy(),
+            Some(true)
+        );
     }
 }

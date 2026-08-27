@@ -1,0 +1,23 @@
+import { chromium } from 'playwright';
+import AxeBuilder from '@axe-core/playwright';
+import { existsSync } from 'node:fs';
+
+const url = process.argv[2] ?? 'http://127.0.0.1:4173';
+const fleetChromium = '/opt/pw-browsers/chromium_headless_shell-1208/chrome-headless-shell-linux64/chrome-headless-shell';
+const browser = await chromium.launch(existsSync(fleetChromium) ? { executablePath: fleetChromium } : {});
+const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+const page = await context.newPage();
+const errors = [];
+page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+page.on('pageerror', error => errors.push(String(error)));
+await page.goto(url, { waitUntil: 'networkidle' });
+await page.getByRole('button', { name: /Plan workflow/ }).click();
+await page.waitForTimeout(250);
+const resultText = await page.locator('#result').innerText();
+if (!resultText.includes('Pull request checks')) throw new Error(`Planner interaction failed: ${resultText.slice(0,300)}`);
+const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+const report = await new AxeBuilder({ page }).analyze();
+const output = { seriousOrCritical: report.violations.filter(v => ['serious','critical'].includes(v.impact ?? '')), consoleErrors: errors, horizontalOverflow: overflow };
+console.log(JSON.stringify(output, null, 2));
+await browser.close();
+if (output.seriousOrCritical.length || errors.length || overflow > 1) process.exit(1);

@@ -60,11 +60,16 @@ struct Cli {
 #[derive(Copy, Clone, Debug, ValueEnum)]
 enum EventName {
     Push,
+    #[value(alias = "pull_request")]
     PullRequest,
+    #[value(alias = "pull_request_target")]
     PullRequestTarget,
+    #[value(alias = "workflow_dispatch")]
     WorkflowDispatch,
     Schedule,
+    #[value(alias = "merge_group")]
     MergeGroup,
+    #[value(alias = "workflow_run")]
     WorkflowRun,
 }
 

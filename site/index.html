@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f2f7f6" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="description" content="See which GitHub Actions workflows, jobs, and steps will run before you push. Nothing executes and nothing leaves your browser." />
+    <title>ghaplan — GitHub Actions dry-run planner</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to planner</a>
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="ghaplan home">
+        <svg aria-hidden="true" viewBox="0 0 36 36" width="36" height="36"><path d="M8 18c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10S8 23.5 8 18Z"/><path d="M12 18h5m0 0 4-5m-4 5 4 5m0-10h4m-4 10h4"/></svg>
+        <span>gha<span>plan</span></span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#planner">Planner</a><a href="#install">Install</a><a href="#limits">Limits</a>
+        <a class="repo-link" href="https://github.com/B-Divyesh/sf-gha-dry-run-planner">Source <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> No runner. No push. No surprise.</p>
+          <h1 id="hero-title">Know the plan<br /><em>before</em> the push.</h1>
+          <p class="lede">Give <code>ghaplan</code> a workflow and a synthetic event. It traces triggers, filters, conditions, matrices, and dependencies—without executing a single step.</p>
+          <div class="hero-actions"><a class="button primary" href="#planner">Plan a workflow</a><button class="button copy-command" type="button" data-copy="cargo install --path ."><span>cargo install --path .</span><span aria-hidden="true">Copy</span></button></div>
+          <p class="trust"><span aria-hidden="true">◇</span> Local by design. Your workflow never leaves this tab.</p>
+        </div>
+        <figure class="hero-art">
+          <picture><source media="(max-width: 700px)" srcset="/assets/hero-ceramic-760.webp" /><img src="/assets/hero-ceramic.webp" width="1400" height="933" fetchpriority="high" alt="A porcelain tray with branching channels and colored stones, evoking a workflow plan" /></picture>
+          <figcaption>Every branch accounted for.</figcaption>
+        </figure>
+      </section>
+
+      <section class="planner-section" id="planner" aria-labelledby="planner-title">
+        <div class="section-heading"><p class="eyebrow"><span></span> Live planner</p><h2 id="planner-title">Shape the event. Read the outcome.</h2><p>Paste YAML or open a local file. Planning happens entirely in your browser.</p></div>
+        <div class="planner-shell">
+          <form class="event-panel" id="event-form">
+            <div class="panel-title"><span>01</span><div><h3>Event</h3><p>Build the synthetic payload</p></div></div>
+            <label for="event">Event</label><select id="event" name="event"><option value="pull_request">pull_request</option><option value="push">push</option><option value="workflow_dispatch">workflow_dispatch</option><option value="merge_group">merge_group</option><option value="schedule">schedule</option><option value="workflow_run">workflow_run</option></select>
+            <div class="field-pair"><div><label for="base">Base branch</label><input id="base" name="base" value="main" autocomplete="off" /></div><div><label for="head">Head branch</label><input id="head" name="head" value="feature/quiet-ci" autocomplete="off" /></div></div>
+            <label for="paths">Changed paths <span>one per line</span></label><textarea class="paths-input" id="paths" name="paths" rows="4" spellcheck="false">src/planner.ts
+src/ui.ts</textarea>
+            <label for="inputs">Inputs <span>KEY=VALUE, one per line</span></label><textarea class="inputs-field" id="inputs" name="inputs" rows="3" spellcheck="false"></textarea>
+            <button class="button primary plan-button" type="submit"><span>Plan workflow</span><kbd>⌘ ↵</kbd></button>
+            <p class="offline-note" id="connection-state" role="status"><span></span> Works offline after first load</p>
+          </form>
+
+          <section class="workflow-panel" aria-labelledby="workflow-heading">
+            <div class="panel-title"><span>02</span><div><h3 id="workflow-heading">Workflow</h3><p>YAML stays on this device</p></div><label class="file-button" for="workflow-file">Open file<input type="file" id="workflow-file" accept=".yml,.yaml,text/yaml" /></label></div>
+            <label class="sr-only" for="workflow-source">GitHub Actions workflow YAML</label>
+            <textarea id="workflow-source" class="code-editor" spellcheck="false" aria-describedby="source-hint"></textarea>
+            <p id="source-hint" class="editor-hint"><span id="line-count">0 lines</span><span>YAML</span></p>
+          </section>
+        </div>
+
+        <section class="result-panel" aria-labelledby="result-heading">
+          <div class="result-header"><div><p class="eyebrow"><span></span> Plan</p><h3 id="result-heading" tabindex="-1">What will happen</h3></div><div class="result-actions"><button type="button" id="expand-all">Expand all</button><button type="button" id="copy-json">Copy JSON</button></div></div>
+          <div id="result" class="result-content" aria-live="polite" aria-busy="false"></div>
+        </section>
+      </section>
+
+      <section class="how" aria-labelledby="how-title"><p class="eyebrow"><span></span> The quiet path to certainty</p><h2 id="how-title">Static answers, useful reasons.</h2><ol><li><span>1</span><h3>Describe the moment</h3><p>Choose an event, branch, changed paths, labels, and dispatch inputs.</p></li><li><span>2</span><h3>Trace the workflow</h3><p>Trigger filters, expressions, matrices, and the needs graph are evaluated locally.</p></li><li><span>3</span><h3>See every decision</h3><p>Run, skip, and unknown outcomes include the reason—not just a colored light.</p></li></ol></section>
+
+      <section class="install" id="install" aria-labelledby="install-title"><div><p class="eyebrow"><span></span> CLI</p><h2 id="install-title">The same question,<br />right beside your code.</h2><p>The typed Rust library and single binary fit scripts, pre-commit hooks, and editors. JSON output is stable for automation.</p><a href="https://github.com/B-Divyesh/sf-gha-dry-run-planner#install">Read installation notes <span aria-hidden="true">→</span></a></div><pre aria-label="Command line example"><code><span class="prompt">$</span> ghaplan --event pull_request \
+    --base main --head feat \
+    --paths src/a.ts
+
+<span class="run">RUN</span>  workflow CI
+      └─ pull_request matched filters
+      ├─ <span class="run">RUN</span>  job lint
+      ├─ <span class="run">RUN</span>  job test [3 cells]
+      └─ <span class="skip">SKIP</span> job release
+         └─ if evaluated to false</code></pre></section>
+
+      <section class="limits" id="limits" aria-labelledby="limits-title"><div><p class="eyebrow"><span></span> Honest boundaries</p><h2 id="limits-title">A planner, not a runner.</h2></div><div class="limit-grid"><article><span aria-hidden="true">✓</span><h3>Understood</h3><p>Common push, pull request, dispatch, schedule, and merge-group triggers; ordered branch/path filters; core expression functions; matrix include/exclude; needs; env; inputs; referenced secrets and permissions.</p></article><article><span aria-hidden="true">—</span><h3>Left unknown</h3><p>Secret values, live concurrency state, <code>hashFiles()</code>, remote reusable workflows, composite-action internals, and runner filesystem state. Unknown is shown explicitly, never guessed.</p></article></div></section>
+    </main>
+
+    <footer><div class="wordmark"><span>gha<span>plan</span></span></div><p>Plan locally. Push deliberately.</p><div><a href="https://github.com/B-Divyesh/sf-gha-dry-run-planner">GitHub</a><a href="#limits">Fidelity</a><span>No analytics · no uploads</span></div><p class="fine">MIT licensed · Built by the Param Factory · © 2026</p></footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/app.ts"></script>
+  </body>
+</html>
