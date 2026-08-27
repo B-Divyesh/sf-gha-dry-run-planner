@@ -1,28 +1,16 @@
-# Handoff — gha-dry-run-planner repair
+# Handoff — gha-dry-run-planner verification
 
-**Base reviewed:** `95bbe9a581d51d3c508c8dba7182b898a56def57`
-**Deployment:** https://gha-dry-run-planner.sociobot.in/
+## PASS
 
-## What changed
+**Verified candidate:** `8a69c9d6a18ae0bdf5c8d8af183f51a8c6493080`
+**Live deployment:** <https://gha-dry-run-planner.sociobot.in/>
 
-- Corrected job-level `needs` gating in the Rust CLI/library and browser
-  engine. A job condition is evaluated first; the implicit dependency
-  `success()` gate applies only when the condition has no status function.
-  Consequently, a cleanup job with `needs: upstream` and `if: always()` runs
-  when `upstream` is skipped, matching GitHub Actions behavior.
-- Status functions now read planner job status context (`always`, `success`,
-  `failure`, and `cancelled`) rather than treating every status check as a
-  fixed value. Step conditions retain their existing per-step success behavior.
-- Added identical Rust and browser-engine regressions for the skipped-upstream
-  `always()` workflow, plus a browser production E2E assertion for it.
-- Raised the 390 px wordmark, Source link, Expand all, and Copy JSON controls
-  to at least 44 CSS px. The E2E audit measures all four.
-- Replaced the Clippy `map(...).flatten()` warning with `and_then`, and added a
-  strict `npm run typecheck` gate with Vite `ImportMeta.env` typing.
+Independent QA from a detached clean checkout **passes**. The live index and
+all public candidate assets match the clean `dist/site` build byte-for-byte.
+No product code was changed by verification. Full evidence is in
+`.factory/verification-2.md`.
 
-## Verification
-
-Run from a clean checkout:
+## What was verified
 
 ```sh
 npm ci
@@ -36,37 +24,31 @@ npm run preview
 npm run audit:a11y
 ```
 
-Completed for this repair:
+All gates passed. The packed CLI was installed into a clean prefix and used;
+a separate Rust consumer compiled and ran against the public library API.
+Representative trigger/filter/expression/matrix/needs/secret/permission
+planning, path-filter boundary behavior, malformed-YAML recovery, unknown
+strict-mode behavior, and the previous `if: always()` skipped-need regression
+all passed.
 
-- Clean `npm ci`; strict TypeScript check; `npm test` (7 Rust unit tests, one
-  Rust doctest, and 5 browser-engine tests); `cargo fmt --check`; and strict
-  Clippy all passed.
-- Production CLI E2E passed for the exact skipped-upstream `if: always()`
-  reproducer: `upstream=skip`, `cleanup=run`, and its cleanup step runs.
-- `npm run build` produced `dist/site`; `npm run pack:cli` produced a
-  registry-ready crate. The extracted crate installed successfully and its
-  `ghaplan --version` command passed. A fresh Rust consumer compiled and ran
-  against `plan_workflow`, `Event`, `PlanOptions`, `Outcome`, and `evaluate`.
-- Local production browser audit passed at 390×844: zero serious/critical axe
-  findings, zero console errors, no horizontal overflow, offline reload,
-  reduced-motion/dark-mode checks, exact `always()` planner E2E, and measured
-  target heights of 44 px for wordmark, Source, Expand all, and Copy JSON.
-- Standard static deployment completed. The live `index.html` SHA-256 matches
-  the local production build, `verify-url.sh` passed (HTTP 200, title/lang,
-  one H1, main landmark, image alt labels, and no console errors), and the
-  same live 390 px audit passed with the exact 44 px controls and `always()`
-  regression.
+Desktop and 390 px mobile browser checks passed: keyboard Ctrl+Enter planning,
+visible 3 px focus, no horizontal overflow, zero console/page errors, zero axe
+serious/critical findings, reduced motion, offline reload, active service
+worker with a clean update check, and only same-origin requests. Live response
+headers enforce self-only CSP, HSTS, nosniff, no-referrer, and restrictive
+permissions. The page sets no cookies or browser storage and makes no analytics
+or third-party requests. Lighthouse mobile live: Performance 99,
+Accessibility 100, LCP 1,203 ms, CLS 0.
 
-## Release notes
+Release artefact budgets pass: 61,588 B initial JS, 14,061 B CSS, 24,652 B
+mobile hero image; system fonts only. `cargo package` is ready for the factory
+to publish; no registry publishing was performed.
 
-The site is static, has no runtime CDN or telemetry, and is deployed with the
-factory Standard Static Web Apps flow. The crate is ready for the factory to
-publish with `cargo package` / `cargo publish`; no registry publishing was
-performed here.
+## Defects and limits
 
-## Known fidelity limits
+No high, medium, or low severity defects found.
 
-This remains a no-execution planner. It does not discover runner failures or
-cancellations from a live run, execute steps, read secret values, evaluate
-`hashFiles()`, load remote reusable workflows, or observe live concurrency.
-Those cases remain explicit static limits rather than guesses.
+This is intentionally a no-execution planner. It explicitly leaves secret
+values, runner/filesystem state, `hashFiles()`, remote reusable workflows,
+composite internals, live concurrency, and undocumented GitHub edge cases
+unknown rather than guessing.
