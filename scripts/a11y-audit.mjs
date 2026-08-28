@@ -10,8 +10,8 @@ const page = await context.newPage();
 const errors = [];
 page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
 page.on('pageerror', error => errors.push(String(error)));
-await page.goto(url, { waitUntil: 'networkidle' });
-await page.getByRole('button', { name: /Plan workflow/ }).click();
+await page.goto(`${url}/demo`, { waitUntil: 'networkidle' });
+await page.getByRole('button', { name: /Show this workflow/ }).click();
 await page.waitForTimeout(250);
 const resultText = await page.locator('#result').innerText();
 if (!resultText.includes('Pull request checks')) throw new Error(`Planner interaction failed: ${resultText.slice(0,300)}`);
@@ -34,7 +34,7 @@ jobs:
     if: always()
     steps: [{ run: echo cleanup }]
 `);
-await page.getByRole('button', { name: /Plan workflow/ }).click();
+await page.getByRole('button', { name: /Show this workflow/ }).click();
 const cleanup = await page.locator('summary').filter({ hasText: 'cleanup' }).innerText();
 if (!cleanup.includes('Job if evaluated to true.')) throw new Error(`always() regression: ${cleanup}`);
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

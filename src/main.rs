@@ -4,6 +4,7 @@ use ghaplan::{plan_workflow, Event, Outcome, Plan, PlanOptions, WorkflowPlan};
 use serde_json::Value;
 use std::{
     collections::BTreeMap,
+    ffi::OsString,
     fs,
     io::{self, Read},
     path::{Path, PathBuf},
@@ -16,9 +17,12 @@ use std::{
     version,
     about = "Explain a GitHub Actions plan without running it",
     long_about = "Statically evaluate workflow triggers, branch/path filters, job and step if conditions, matrix expansion, needs ordering, expressions, permissions, and secret references. No steps or actions are executed.",
-    after_help = "Examples:\n  ghaplan --event pull_request --base main --head feat --paths src/a.ts\n  ghaplan .github/workflows/ci.yml --event push --head main --json\n  cat ci.yml | ghaplan - --event workflow_dispatch --input release=true"
+    after_help = "Examples:\n  ghaplan demo\n  ghaplan --event pull_request --base main --head feat --paths src/a.ts\n  ghaplan .github/workflows/ci.yml --event push --head main --json\n  cat ci.yml | ghaplan - --event workflow_dispatch --input release=true"
 )]
 struct Cli {
+    /// Run the bundled pull-request sample in an isolated temporary directory. `ghaplan demo` also works.
+    #[arg(long)]
+    demo: bool,
     /// Workflow YAML files. Defaults to .github/workflows/*.yml and *.yaml. Use - for stdin.
     #[arg(value_name = "WORKFLOW")]
     workflows: Vec<PathBuf>,
@@ -98,7 +102,7 @@ fn main() -> ExitCode {
 }
 
 fn run() -> Result<ExitCode> {
-    let cli = Cli::parse();
+    let cli = parse_cli();
     let inputs = parse_inputs(&cli.input)?;
     let event = Event {
         name: cli.event.as_str().into(),
@@ -109,40 +113,65 @@ fn run() -> Result<ExitCode> {
             )
             .then(|| "synchronize".into())
         }),
-        base: cli.base,
-        head: cli.head,
+        base: cli.base.or_else(|| cli.demo.then(|| "main".into())),
+        head: cli
+            .head
+            .or_else(|| cli.demo.then(|| "feature/quiet-ci".into())),
         git_ref: cli.git_ref,
-        paths: cli.paths,
+        paths: if cli.demo && cli.paths.is_empty() {
+            vec!["src/planner.ts".into(), "src/ui.ts".into()]
+        } else {
+            cli.paths
+        },
         labels: cli.label,
         inputs,
     };
-    let files = discover_files(&cli.workflows)?;
-    if files.is_empty() {
-        anyhow::bail!("no workflow files found; pass a path or create .github/workflows/*.yml");
-    }
     let mut workflows = Vec::new();
-    for path in files {
-        let (label, yaml) = if path == Path::new("-") {
-            let mut text = String::new();
-            io::stdin()
-                .read_to_string(&mut text)
-                .context("read workflow from stdin")?;
-            ("<stdin>".into(), text)
-        } else {
-            (
-                path.display().to_string(),
-                fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?,
-            )
-        };
+    if cli.demo {
+        let demo_dir = std::env::temp_dir().join(format!("ghaplan-demo-{}", std::process::id()));
+        fs::create_dir_all(&demo_dir).context("create demo directory")?;
+        let sample_path = demo_dir.join("pull-request.yml");
+        let sample = include_str!("../examples/pull-request.yml");
+        fs::write(&sample_path, sample).context("write bundled demo workflow")?;
+        eprintln!("Demo sample written to {}", sample_path.display());
         workflows.push(plan_workflow(
-            &yaml,
+            sample,
             &event,
             &PlanOptions {
-                file: label,
+                file: sample_path.display().to_string(),
                 repository: cli.repository.clone(),
                 actor: "local".into(),
             },
         ));
+    } else {
+        let files = discover_files(&cli.workflows)?;
+        if files.is_empty() {
+            anyhow::bail!("no workflow files found; pass a path or create .github/workflows/*.yml");
+        }
+        for path in files {
+            let (label, yaml) = if path == Path::new("-") {
+                let mut text = String::new();
+                io::stdin()
+                    .read_to_string(&mut text)
+                    .context("read workflow from stdin")?;
+                ("<stdin>".into(), text)
+            } else {
+                (
+                    path.display().to_string(),
+                    fs::read_to_string(&path)
+                        .with_context(|| format!("read {}", path.display()))?,
+                )
+            };
+            workflows.push(plan_workflow(
+                &yaml,
+                &event,
+                &PlanOptions {
+                    file: label,
+                    repository: cli.repository.clone(),
+                    actor: "local".into(),
+                },
+            ));
+        }
     }
     let plan = Plan { event, workflows, warnings: vec!["Planning is static: run commands, action internals, remote reusable workflows, live concurrency, and secret values are never evaluated.".into()] };
     if cli.json {
@@ -160,6 +189,14 @@ fn run() -> Result<ExitCode> {
     } else {
         ExitCode::SUCCESS
     })
+}
+
+fn parse_cli() -> Cli {
+    let mut args: Vec<OsString> = std::env::args_os().collect();
+    if args.get(1).is_some_and(|arg| arg == "demo") {
+        args[1] = "--demo".into();
+    }
+    Cli::parse_from(args)
 }
 
 fn parse_inputs(raw: &[String]) -> Result<BTreeMap<String, Value>> {

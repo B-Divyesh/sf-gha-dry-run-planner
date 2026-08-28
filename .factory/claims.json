@@ -1,0 +1,8 @@
+[
+  {"id":"sample-plan","claim":"The sample demo shows a pull-request workflow plan immediately.","where":"landing action, /demo","test":"npm run test:claims -- --grep @claim:sample-plan","sandbox":"fresh browser context opens /demo; assert sample workflow and run results"},
+  {"id":"demo-storage","claim":"Demo edits stay in a separate browser storage namespace.","where":"/demo banner, privacy","test":"npm run test:claims -- --grep @claim:demo-storage","sandbox":"fresh browser context; edit demo; assert only demo: key changes and real key is not read"},
+  {"id":"offline-reload","claim":"Works offline after the first load.","where":"landing facts, planner status","test":"npm run test:claims -- --grep @claim:offline-reload","sandbox":"fresh browser context loads /demo, waits for service worker, reloads once, then reloads offline"},
+  {"id":"local-browser","claim":"Workflow text stays in this browser.","where":"landing facts, workflow panel, privacy","test":"npm run test:claims -- --grep @claim:local-browser","sandbox":"intercept every request for demo load and edit; assert each request is same-origin"},
+  {"id":"free-no-account","claim":"Free to use. No account.","where":"landing facts","test":"npm run test:claims -- --grep @claim:free-no-account","sandbox":"fresh landing page; assert the stated price and absence of sign-in or payment controls"},
+  {"id":"cli-demo","claim":"The CLI runs a bundled sample with ghaplan demo.","where":"terminal section, README","test":"npm run test:claims -- --grep @claim:cli-demo","sandbox":"run cargo binary from a temporary directory and assert the sample path and workflow plan"}
+]

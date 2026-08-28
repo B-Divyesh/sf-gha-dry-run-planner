@@ -1,22 +1,16 @@
 # ghaplan
 
-`ghaplan` explains which GitHub Actions workflows, jobs, matrix cells, and
-steps will run for a synthetic event—without Docker, runner setup, command
-execution, or a push.
+ghaplan plans a GitHub Actions workflow before you push.
 
-It is for developers editing `.github/workflows` who need quick answers about
-triggers, ordered branch/path filters, `if:` expressions, matrix expansion,
-`needs` ordering, expression values, permissions, and referenced secrets.
-The static browser planner runs at <https://gha-dry-run-planner.sociobot.in>;
-workflow text stays in the tab and no analytics are collected.
+It is for developers checking a workflow file.
 
-At job level, `ghaplan` models GitHub's implicit `success()` dependency gate.
-An explicit status check such as `if: always()` is evaluated against the
-`needs` results, so cleanup jobs can run after a skipped dependency.
+Open the browser planner at <https://gha-dry-run-planner.sociobot.in>.
+
+The sample demo is at <https://gha-dry-run-planner.sociobot.in/demo>.
 
 ## Install
 
-Until the first registry release, build the single binary from source:
+Build the command-line tool from source.
 
 ```sh
 git clone https://github.com/B-Divyesh/sf-gha-dry-run-planner.git
@@ -24,103 +18,57 @@ cd sf-gha-dry-run-planner
 cargo install --path .
 ```
 
-Rust 1.85 or newer is supported. The factory owns publishing credentials;
-this repository is ready for `cargo package` but the worker does not publish.
+Rust 1.85 or newer is required.
+
+## Try the sample
+
+Run the shipped pull-request sample from any directory.
+
+```sh
+ghaplan demo
+# or: ghaplan --demo
+```
+
+The command writes its sample file to a temporary directory and prints its plan.
 
 ## CLI usage
 
-From a repository containing `.github/workflows`:
+Use a repository workflow or name a file.
 
 ```sh
 ghaplan --event pull-request --base main --head feature/cache --paths src/cache.rs
-```
-
-Or name files explicitly, supply inputs, and emit JSON:
-
-```sh
-ghaplan .github/workflows/release.yml \
-  --event workflow-dispatch \
-  --input release=true \
-  --json
-```
-
-Read a workflow from stdin:
-
-```sh
+ghaplan .github/workflows/release.yml --event workflow-dispatch --input release=true --json
 cat .github/workflows/ci.yml | ghaplan - --event push --head main
 ```
 
-Repeat `--paths`, `--label`, and `--input`, or use comma-separated paths and
-labels. `--strict` exits with code 2 for undecidable expressions as well as
-invalid workflows. Normal mode exits 0 for a valid plan even when something
-is explicitly unknown, and 2 for input/YAML errors. `ghaplan --help` lists all
-events and flags.
+Use `ghaplan --help` for the event and input options.
 
-Human output gives each decision and reason:
+## Browser demo and privacy
 
-```text
-PLAN  event=pull_request paths=1 inputs=0
+The demo opens an isolated sample plan at `/demo` or `?demo=1`.
 
-RUN  workflow CI
-     └─ pull_request matched all configured trigger filters
-     ├─ RUN  job test
-     │  └─ job if evaluated to true
-     │     matrix #1 os=ubuntu node=22
-     │     └─ RUN  step Test — step if evaluated to true
-     └─ SKIP job publish (needs: test)
-        └─ job if evaluated to false
-```
+Demo edits use the `demo:workflow-source` browser-storage key.
 
-## Rust library
+Use **Reset demo** to restore the shipped sample.
 
-The public surface is intentionally small and typed:
-
-```rust
-use ghaplan::{plan_workflow, Event, PlanOptions};
-
-let workflow = "name: CI\non: push\njobs:\n  check:\n    steps:\n      - run: cargo test\n";
-let event = Event {
-    name: "push".into(), action: None, base: None,
-    head: Some("main".into()), git_ref: None,
-    paths: vec!["src/lib.rs".into()], labels: vec![], inputs: Default::default(),
-};
-let plan = plan_workflow(workflow, &event, &PlanOptions::default());
-assert_eq!(plan.jobs[0].id, "check");
-```
-
-`evaluate(expression, context)` is also exported for isolated expression
-inspection. Both APIs return known, unknown, or error states rather than
-inventing values.
-
-## Fidelity and safety
-
-`ghaplan` is a static planner, not a runner. It does not execute `run:`, load
-actions, read secrets, contact GitHub, or fetch reusable workflows. It models
-common `push`, `pull_request`, `pull_request_target`, `workflow_dispatch`,
-`schedule`, `merge_group`, and `workflow_run` entry points; ordered branch and
-path patterns; core operators/functions; `github`, `inputs`, `matrix`,
-`needs`, and `env` contexts; Cartesian matrices with include/exclude; and the
-needs DAG.
-
-Runner-derived state, `hashFiles()`, secret values, dynamic remote workflows,
-composite-action internals, live concurrency cancellation, and obscure
-`workflow_run` payload corners are declared unknown. GitHub has undocumented
-edge cases, so compare high-risk release rules against GitHub's documentation.
+Read the [privacy policy](https://gha-dry-run-planner.sociobot.in/privacy) and
+[terms](https://gha-dry-run-planner.sociobot.in/terms).
 
 ## Develop and verify
 
 ```sh
-npm install
-npm run dev          # browser planner
-npm test             # Rust + browser-engine tests
-npm run typecheck     # strict browser TypeScript check
-npm run build        # release CLI + static site in dist/site
-npm run preview
-npm run pack:cli     # registry-ready crate validation/package
+npm ci
+npm test
+npm run typecheck
+npm run build
+npm run audit:a11y
 ```
 
-The site uses Vite, vanilla TypeScript, and one YAML parser. It has no runtime
-CDNs, tracking, accounts, cookies, or server. The Rust CLI has no telemetry.
+The static site is written to `dist/site`.
+
+Run each command in `.factory/claims.json` after a clean checkout.
+
+Create a registry-ready crate with `npm run pack:cli`.
 
 ## License
 

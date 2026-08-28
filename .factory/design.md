@@ -60,3 +60,6 @@ sizes (no external assets or licenses). Final prompt and generation metadata
 are stored beside the source asset. All remaining marks and icons are
 hand-authored inline SVG/CSS, MIT-licensed with this repository.
 
+The social image (`site/public/assets/og-ceramic.png`) and Apple touch icon are
+local crops of that same generated porcelain source. They add no external
+asset, font, script, or license.
