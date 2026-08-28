@@ -1,54 +1,39 @@
-# Handoff — gha-dry-run-planner verification
+# Handoff — review 1
 
-## PASS
+## Result: FAIL
 
-**Verified candidate:** `8a69c9d6a18ae0bdf5c8d8af183f51a8c6493080`
-**Live deployment:** <https://gha-dry-run-planner.sociobot.in/>
+No product code was changed. The review report is in
+`.factory/review-1.md`.
 
-Independent QA from a detached clean checkout **passes**. The live index and
-all public candidate assets match the clean `dist/site` build byte-for-byte.
-No product code was changed by verification. Full evidence is in
-`.factory/verification-2.md`.
+### Work completed
 
-## What was verified
+- Cold live review at 390px and desktop.
+- Planner, route, metadata, link, storage, same-origin network, offline,
+  accessibility, and CLI-demo checks.
+- Required copy audit for landing and README.
+- Local verification: `npm test`, `npm run typecheck`, `npm run build`, and
+  `node scripts/a11y-audit.mjs https://gha-dry-run-planner.sociobot.in` all
+  passed.
+
+### Known gaps that block acceptance
+
+1. No visible one-click demo, `/demo` behaviour, demo banner/reset/isolation,
+   `.factory/demo.md`, or CLI `--demo`/`demo` command.
+2. No `.factory/claims.json` or `@claim:` tests despite many privacy, offline,
+   fidelity, and feature claims.
+3. No real `/privacy`, `/terms`, or designed 404 route; no legal footer links;
+   no canonical/OG/Twitter/Apple-touch metadata or sitemap.
+4. First-screen copy does not name its intended user in plain words.
+
+### How to verify after repair
 
 ```sh
 npm ci
-npm run typecheck
 npm test
-cargo fmt --check
-cargo clippy --all-targets --all-features -- -D warnings
+npm run typecheck
 npm run build
-npm run pack:cli
-npm run preview
-npm run audit:a11y
+node scripts/a11y-audit.mjs https://gha-dry-run-planner.sociobot.in
 ```
 
-All gates passed. The packed CLI was installed into a clean prefix and used;
-a separate Rust consumer compiled and ran against the public library API.
-Representative trigger/filter/expression/matrix/needs/secret/permission
-planning, path-filter boundary behavior, malformed-YAML recovery, unknown
-strict-mode behavior, and the previous `if: always()` skipped-need regression
-all passed.
-
-Desktop and 390 px mobile browser checks passed: keyboard Ctrl+Enter planning,
-visible 3 px focus, no horizontal overflow, zero console/page errors, zero axe
-serious/critical findings, reduced motion, offline reload, active service
-worker with a clean update check, and only same-origin requests. Live response
-headers enforce self-only CSP, HSTS, nosniff, no-referrer, and restrictive
-permissions. The page sets no cookies or browser storage and makes no analytics
-or third-party requests. Lighthouse mobile live: Performance 99,
-Accessibility 100, LCP 1,203 ms, CLS 0.
-
-Release artefact budgets pass: 61,588 B initial JS, 14,061 B CSS, 24,652 B
-mobile hero image; system fonts only. `cargo package` is ready for the factory
-to publish; no registry publishing was performed.
-
-## Defects and limits
-
-No high, medium, or low severity defects found.
-
-This is intentionally a no-execution planner. It explicitly leaves secret
-values, runner/filesystem state, `hashFiles()`, remote reusable workflows,
-composite internals, live concurrency, and undocumented GitHub edge cases
-unknown rather than guessing.
+Then run every command in `.factory/claims.json` from a clean browser/demo
+context and repeat the route and CLI-demo checks listed in `review-1.md`.
