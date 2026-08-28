@@ -1,1 +1,1 @@
-Preview GitHub Actions jobs and steps locally before pushing, without running the workflow.
+Plan GitHub Actions jobs and steps before pushing, without running the workflow.

@@ -299,10 +299,56 @@ test('@claim:cli-input accepts repository discovery, a named file, and standard 
 
 test('@claim:site-build-output produces the complete static site in dist/site', () => {
   for (const file of ['index.html', '404.html', 'staticwebapp.config.json', 'sitemap.xml', 'sw.js']) expect(existsSync(join(root, 'dist/site', file))).toBeTruthy();
-  expect(readdirSync(join(root, 'dist/site/assets')).some((file) => /^index-.*\.js$/.test(file))).toBeTruthy();
+  expect(readdirSync(join(root, 'dist/site/assets')).some((file) => /^(?:index|main)-.*\.js$/.test(file))).toBeTruthy();
 });
 
 test('@claim:cli-package creates a Rust release package', () => {
   execFileSync('cargo', ['package', '--allow-dirty', '--no-verify'], { cwd: root, encoding: 'utf8' });
   expect(existsSync(join(root, 'target/package/gha-dry-run-planner-0.1.0.crate'))).toBeTruthy();
+});
+
+test('@claim:mit-license keeps the published license statement consistent', async ({ page }) => {
+  const license = readFileSync(join(root, 'LICENSE'), 'utf8');
+  const readme = readFileSync(join(root, 'README.md'), 'utf8');
+  const manifest = readFileSync(join(root, 'Cargo.toml'), 'utf8');
+  expect(license).toContain('Permission is hereby granted, free of charge');
+  expect(license).toContain('THE SOFTWARE IS PROVIDED "AS IS"');
+  expect(readme).toMatch(/## License\s+\nMIT\. See \[LICENSE\]/);
+  expect(manifest).toMatch(/^license = "MIT"$/m);
+  await page.goto('/');
+  await expect(page.locator('footer')).toContainText('MIT licensed');
+  await page.goto('/terms');
+  await expect(page.getByRole('link', { name: /MIT License.*external link/ })).toBeVisible();
+});
+
+test('@claim:cli-install installs the command from the documented source path', () => {
+  test.setTimeout(180_000);
+  const installRoot = mkdtempSync(join(tmpdir(), 'ghaplan-install-'));
+  const caller = mkdtempSync(join(tmpdir(), 'ghaplan-caller-'));
+  try {
+    execFileSync('cargo', ['install', '--path', '.', '--root', installRoot, '--locked', '--quiet'], { cwd: root, encoding: 'utf8' });
+    const installed = join(installRoot, 'bin', process.platform === 'win32' ? 'ghaplan.exe' : 'ghaplan');
+    expect(execFileSync(installed, ['--version'], { cwd: caller, encoding: 'utf8' }).trim()).toBe('ghaplan 0.1.0');
+    const demo = spawnSync(installed, ['demo'], { cwd: caller, encoding: 'utf8' });
+    expect(demo.status).toBe(0);
+    expect(demo.stdout).toContain('workflow Pull request checks');
+    expect(readdirSync(caller)).toEqual([]);
+    const samplePath = demo.stderr.match(/Demo sample written to (.+pull-request\.yml)/)?.[1].trim();
+    expect(samplePath).toBeTruthy();
+    if (samplePath) rmSync(resolve(samplePath, '..'), { recursive: true, force: true });
+  } finally {
+    rmSync(installRoot, { recursive: true, force: true });
+    rmSync(caller, { recursive: true, force: true });
+  }
+});
+
+test('the claims registry maps every entry to exactly one tagged test', () => {
+  const claims = JSON.parse(readFileSync(join(root, '.factory/claims.json'), 'utf8')) as Array<{ id: string }>;
+  const source = readFileSync(join(root, 'site/e2e/claims.spec.ts'), 'utf8');
+  const ids = new Set(claims.map((claim) => claim.id));
+  expect(ids.size).toBe(claims.length);
+  for (const claim of claims) {
+    const tag = ['@', 'claim:', claim.id].join('');
+    expect(source.split(tag).length - 1, `${claim.id} must have one tagged test`).toBe(1);
+  }
 });

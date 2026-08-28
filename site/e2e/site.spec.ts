@@ -7,15 +7,19 @@ const routes = [
   ['/terms', 'Terms — ghaplan', 'Terms for using ghaplan'],
 ] as const;
 
-test('routes set titles, descriptions, canonicals, and one visible h1', async ({ page }) => {
+test('routes set titles, descriptions, canonicals, social metadata, and exactly one h1', async ({ page }) => {
   for (const [route, title, heading] of routes) {
     const response = await page.goto(route);
     expect(response?.status()).toBe(200);
     await expect(page).toHaveTitle(title);
     await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
-    await expect(page.locator('h1:visible')).toHaveCount(1);
+    await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /.+/);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', route === '/' ? /\/$/ : new RegExp(`${route}$`));
+    for (const selector of ['meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:card"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
+      await expect(page.locator(selector)).toHaveAttribute('content', /.+/);
+    }
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/manifest.webmanifest');
   }
 });
 
@@ -63,7 +67,45 @@ test('unknown routes and the 404 document return a designed HTTP 404', async ({ 
     await page.goto(route);
     await expect(page).toHaveTitle('Page not found — ghaplan');
     await expect(page.getByRole('heading', { level: 1, name: 'This workflow path does not exist' })).toBeVisible();
+    await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.getByRole('link', { name: 'Return to the planner' })).toBeVisible();
+    const canonicalPath = route.replace('.', '\\.');
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`${canonicalPath}$`));
+    for (const selector of ['meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:card"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]', 'link[rel="manifest"]']) {
+      await expect(page.locator(selector)).toHaveCount(1);
+    }
+  }
+});
+
+test('every route uses the same header and footer links', async ({ page }) => {
+  const readChrome = () => page.evaluate(() => {
+    const readLinks = (selector: string) => [...document.querySelectorAll<HTMLAnchorElement>(selector)].map((link) => {
+      const url = new URL(link.href);
+      return `${link.textContent?.replace(/\s+/g, ' ').trim()}|${url.origin === location.origin ? `${url.pathname}${url.hash}` : url.href}`;
+    });
+    return {
+      header: readLinks('#site-header a'),
+      footer: readLinks('#site-footer a'),
+      footerText: document.querySelector('#site-footer')?.textContent?.replace(/\s+/g, ' ').trim(),
+    };
+  });
+  await page.goto('/');
+  const expected = await readChrome();
+  for (const route of ['/demo', '/privacy', '/terms', '/404.html', '/not-a-real-route']) {
+    await page.goto(route);
+    expect(await readChrome(), `${route} must retain the shared site chrome`).toEqual(expected);
+  }
+});
+
+test('every off-origin link is visibly and accessibly marked as external', async ({ page }) => {
+  for (const route of ['/', '/demo', '/privacy', '/terms', '/404.html', '/not-a-real-route']) {
+    await page.goto(route);
+    const external = page.locator('a[href^="http"]:visible');
+    for (const link of await external.all()) {
+      expect(await link.getAttribute('class')).toContain('external-link');
+      await expect(link).toHaveAccessibleName(/external link/i);
+      await expect(link.locator('.external-mark')).toBeVisible();
+    }
   }
 });
 

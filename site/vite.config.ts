@@ -9,5 +9,11 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2022',
     sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        404: resolve(__dirname, '404.html'),
+      },
+    },
   },
 });

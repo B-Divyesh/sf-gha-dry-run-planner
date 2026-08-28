@@ -1,5 +1,8 @@
 import './style.css';
 import { planWorkflow, type BrowserPlan, type SyntheticEvent } from './engine';
+import { mountSiteChrome } from './chrome';
+
+mountSiteChrome();
 
 const EXAMPLE = `name: Pull request checks
 on:
@@ -49,6 +52,13 @@ const lineCount = $('#line-count');
 const toast = $('#toast');
 let latestPlan: BrowserPlan | null = null;
 let currentRoute: Route = 'home';
+const routeHeadingIds: Record<Route, string> = {
+  home: 'hero-title',
+  demo: 'demo-title',
+  privacy: 'privacy-title',
+  terms: 'terms-title',
+  'not-found': 'not-found-title',
+};
 
 function routeForLocation(): Route {
   if (location.pathname === '/demo' || (location.pathname === '/' && new URLSearchParams(location.search).get('demo') === '1')) return 'demo';
@@ -77,6 +87,21 @@ function setMetadata(route: Route) {
 }
 function clearDemoStorage() { Object.keys(localStorage).filter((key) => key.startsWith('demo:')).forEach((key) => localStorage.removeItem(key)); }
 function restoreDemo() { source.value = localStorage.getItem('demo:workflow-source') || EXAMPLE; localStorage.setItem('demo:workflow-source', source.value); updateLineCount(); runPlanner(); }
+function replaceHeading(element: HTMLElement, tag: 'h1' | 'h2'): HTMLElement {
+  if (element.tagName.toLowerCase() === tag) return element;
+  const replacement = document.createElement(tag);
+  for (const attribute of element.attributes) replacement.setAttribute(attribute.name, attribute.value);
+  replacement.append(...element.childNodes);
+  element.replaceWith(replacement);
+  return replacement;
+}
+function setPrimaryHeading(route: Route): HTMLElement {
+  const targetId = routeHeadingIds[route];
+  document.querySelectorAll<HTMLElement>('h1').forEach((heading) => {
+    if (heading.id !== targetId) replaceHeading(heading, 'h2');
+  });
+  return replaceHeading(document.getElementById(targetId)!, 'h1');
+}
 function renderRoute({ focus = false }: { focus?: boolean } = {}) {
   currentRoute = routeForLocation();
   const home = document.querySelector<HTMLElement>('[data-home]')!;
@@ -85,10 +110,10 @@ function renderRoute({ focus = false }: { focus?: boolean } = {}) {
   document.body.classList.toggle('is-demo', currentRoute === 'demo');
   $('#demo-banner').hidden = currentRoute !== 'demo';
   document.querySelectorAll<HTMLElement>('[data-page]').forEach((page) => page.hidden = page.dataset.page !== currentRoute);
+  const heading = setPrimaryHeading(currentRoute);
   setMetadata(currentRoute);
   if (currentRoute === 'demo') restoreDemo();
   if (currentRoute === 'home') { source.value = EXAMPLE; updateLineCount(); renderEmpty(); }
-  const heading = currentRoute === 'demo' ? $('#demo-title') : isLegal ? document.querySelector<HTMLElement>(`[data-page="${currentRoute}"] h1`)! : $('#hero-title');
   $('#route-announcement').textContent = `${document.title}. ${heading.textContent}`;
   if (focus) window.setTimeout(() => { heading.focus({ preventScroll: true }); heading.scrollIntoView({ block: 'start' }); }, 0);
 }

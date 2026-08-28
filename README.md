@@ -29,9 +29,11 @@ ghaplan demo
 
 The command writes its sample file to a temporary directory and prints its plan.
 
-## CLI usage
+## Command-line usage
 
-Run `ghaplan` in a repository, or pass a workflow file path. Pass `-` to read standard input.
+Run `ghaplan` in a repository, or pass a workflow file path.
+
+Use `ghaplan -` when another command provides the workflow.
 
 ```sh
 ghaplan --event pull-request --base main --head feature/cache --paths src/cache.rs

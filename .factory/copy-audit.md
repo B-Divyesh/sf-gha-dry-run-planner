@@ -1,8 +1,8 @@
-# Copy audit — polish 2
+# Copy audit — polish 3
 
 Audited the rendered landing, demo, legal, 404, dynamic states, metadata, and
-README on 2026-08-28. Whitespace-delimited counts are shown below. No sentence
-exceeds 22 words. No banned marketing word appears.
+README on 2026-08-28. Counts are whitespace-delimited. No sentence exceeds 22
+words, and no banned marketing word appears.
 
 ## First screen
 
@@ -15,8 +15,8 @@ exceeds 22 words. No banned marketing word appears.
 | Fact | 6 | Works offline after the first load. |
 | Facts | 5 | Free to use. No account. |
 
-The first screen names the job, audience, sample action, resulting state, and
-three concrete facts. It can be read aloud in one breath.
+The first screen names the job and audience, offers the sample action, states
+its result, and gives three concrete facts. It reads aloud in one breath.
 
 ## Landing, demo, and route sentences
 
@@ -26,23 +26,24 @@ three concrete facts. It can be read aloud in one breath.
 | 3 | Read each result. |
 | 14 | Paste YAML or open a local file, then choose the GitHub event to check. |
 | 9 | Choose an event, branches, changed paths, labels, and inputs. |
-| 8 | The planner evaluates triggers, conditions, matrices, and dependencies. |
+| 15 | The planner checks when the workflow starts, each job rule, job variants, and job order. |
 | 9 | Each run, skip, or unknown result includes a reason. |
-| 10 | Run the same check in scripts, hooks, or an editor. |
-| 11 | Push, pull request, dispatch, schedule, merge group, and workflow run events. |
-| 12 | It also checks branch and path rules, job conditions, matrices, and dependencies. |
+| 14 | Run the command from a shell script, a Git hook, or your code editor. |
+| 13 | Checks pushes, pull requests, manual runs, schedules, merge queues, and completed workflow runs. |
+| 14 | It also checks branch and path rules, job rules, job variants, and job order. |
 | 12 | Secret values, runner files, remote workflows, and live GitHub state are marked unknown. |
-| 9 | Plan a GitHub Actions workflow before you push. |
+| 8 | Plan a GitHub Actions workflow before you push. |
+| 5 | ghaplan runs in your browser. |
 | 8 | Planning sends no workflow text, analytics, or uploads. |
 | 10 | Demo edits use keys beginning with `demo:` in this browser. |
 | 4 | Reset demo removes them. |
 | 6 | Real planning does not use browser storage. |
 | 5 | The site has no accounts. |
-| 14 | Questions about this policy can be sent through the project’s issue tracker. |
+| 12 | Questions about this policy can be sent through the project’s issue tracker. |
 | 9 | Use ghaplan to inspect workflow rules before you push. |
 | 5 | ghaplan explains static workflow rules. |
 | 10 | Check important release rules against GitHub documentation before relying on a result. |
-| 11 | The command-line project is available under the MIT License. |
+| 9 | The command-line project is available under the MIT License. |
 | 10 | The page may have moved, or the address may be incomplete. |
 
 ## Dynamic state sentences
@@ -58,6 +59,7 @@ three concrete facts. It can be read aloud in one breath.
 | 3 | Sample plan reset. |
 | 8 | Fix the YAML error below, then plan again. |
 | 10 | No jobs are planned because the workflow trigger is skip. |
+| 4 | Offline — planner still works. |
 
 ## README sentences
 
@@ -68,32 +70,36 @@ three concrete facts. It can be read aloud in one breath.
 | 6 | Open the browser planner at the published URL. |
 | 6 | The sample demo is at the demo URL. |
 | 6 | Build the command-line tool from source. |
-| 8 | Run the shipped pull request sample from any directory. |
+| 9 | Run the shipped pull request sample from any directory. |
 | 14 | The command writes its sample file to a temporary directory and prints its plan. |
-| 9 | Run `ghaplan` in a repository, or pass a workflow file path. |
-| 6 | Pass `-` to read standard input. |
+| 11 | Run `ghaplan` in a repository, or pass a workflow file path. |
+| 8 | Use `ghaplan -` when another command provides the workflow. |
 | 9 | Use `ghaplan --help` for the event and input options. |
 | 11 | The demo opens an isolated sample plan at `/demo` or `?demo=1`. |
-| 7 | Demo edits are stored in this browser under `demo:workflow-source`. |
+| 9 | Demo edits are stored in this browser under `demo:workflow-source`. |
 | 8 | Use **Reset demo** to restore the shipped sample. |
 | 6 | Read the privacy policy and terms. |
 | 7 | The static site is written to `dist/site`. |
 | 9 | Run each command in `.factory/claims.json` after a clean checkout. |
-| 8 | Check the Rust release package with `npm run pack:cli`. |
+| 9 | Check the Rust release package with `npm run pack:cli`. |
 | 1 | MIT. |
 | 2 | See LICENSE. |
 
-## Headings and controls changed in this round
+## Headings, controls, and terminology
 
-| Before | After |
+The round-3 flagged terms now use one plain form:
+
+| Finding | Final wording |
 |---|---|
-| Start for real | Plan my workflow |
-| What will happen | Workflow run and skip results |
-| Ready when the workflow is | No workflow plan yet |
-| Expand all | Expand all jobs |
-| pull-request (prose) | pull request |
+| F-3-5 | The planner checks when the workflow starts, each job rule, job variants, and job order. |
+| F-3-6 | Checks pushes, pull requests, manual runs, schedules, merge queues, and completed workflow runs. |
+| F-3-7 | Run the command from a shell script, a Git hook, or your code editor. |
+| F-3-8 | Use `ghaplan -` when another command provides the workflow. |
+| F-3-9 | “Command-line tool” and “Command-line usage” are used consistently. |
 
-## Terminology
+Every GitHub link ends with a visible `↗` and includes the screen-reader suffix
+“(external link)”. Headings name their subject. Buttons use result-oriented
+verbs. Prose uses “pull request”; code uses the literal `pull_request` value.
 
 | Concept | One term |
 |---|---|
@@ -102,4 +108,4 @@ three concrete facts. It can be read aloud in one breath.
 | Isolated try-out | demo |
 | Planner result | workflow plan |
 | Not decidable result | unknown |
-| Standard GitHub identifier | literal code form such as `pull_request` |
+| Terminal product | command-line tool |
