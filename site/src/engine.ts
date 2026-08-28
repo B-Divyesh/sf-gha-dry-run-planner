@@ -55,8 +55,10 @@ export function planWorkflow(source: string, event: SyntheticEvent): BrowserPlan
   const permissions = workflow.permissions ? typeof workflow.permissions === 'string' ? [workflow.permissions] : Object.entries(workflow.permissions).map(([key, value]) => `${key}: ${value}`) : [];
   const warnings = [
     ...(secretMatches.length ? ['Secret values stay unknown; only references are reported.'] : []),
-    ...(workflow.concurrency ? ['Live concurrency state is unavailable locally.'] : []),
-    ...(event.name === 'workflow_run' ? ['workflow_run payload semantics are only partially modeled.'] : []),
+    ...(source.includes('hashFiles(') ? ['Runner files used by hashFiles() stay unknown.'] : []),
+    ...(entries.some(([, raw]) => typeof (raw as Obj).uses === 'string') ? ['Remote reusable workflows are not loaded; their internals stay unknown.'] : []),
+    ...(workflow.concurrency ? ['Live GitHub concurrency state stays unknown.'] : []),
+    ...(event.name === 'workflow_run' ? ['Live workflow_run payload details stay unknown unless supplied in the event.'] : []),
   ];
   return { name: workflow.name ?? 'Untitled workflow', decision: trigger, jobs, secrets: [...new Set(secretMatches)].sort(), permissions, warnings };
 }

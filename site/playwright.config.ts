@@ -4,5 +4,5 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   use: { baseURL: 'http://127.0.0.1:4173', browserName: 'chromium', headless: true },
-  webServer: { command: 'cd .. && npm run build:site && vite preview --config site/vite.config.ts --host 127.0.0.1', url: 'http://127.0.0.1:4173', reuseExistingServer: false, timeout: 120_000 },
+  webServer: { command: 'cd .. && npm run build:site && node scripts/serve-site.mjs', url: 'http://127.0.0.1:4173', reuseExistingServer: false, timeout: 120_000 },
 });

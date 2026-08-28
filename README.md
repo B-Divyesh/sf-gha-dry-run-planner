@@ -18,11 +18,9 @@ cd sf-gha-dry-run-planner
 cargo install --path .
 ```
 
-Rust 1.85 or newer is required.
-
 ## Try the sample
 
-Run the shipped pull-request sample from any directory.
+Run the shipped pull request sample from any directory.
 
 ```sh
 ghaplan demo
@@ -33,7 +31,7 @@ The command writes its sample file to a temporary directory and prints its plan.
 
 ## CLI usage
 
-Use a repository workflow or name a file.
+Run `ghaplan` in a repository, or pass a workflow file path. Pass `-` to read standard input.
 
 ```sh
 ghaplan --event pull-request --base main --head feature/cache --paths src/cache.rs
@@ -47,7 +45,7 @@ Use `ghaplan --help` for the event and input options.
 
 The demo opens an isolated sample plan at `/demo` or `?demo=1`.
 
-Demo edits use the `demo:workflow-source` browser-storage key.
+Demo edits are stored in this browser under `demo:workflow-source`.
 
 Use **Reset demo** to restore the shipped sample.
 
@@ -68,7 +66,7 @@ The static site is written to `dist/site`.
 
 Run each command in `.factory/claims.json` after a clean checkout.
 
-Create a registry-ready crate with `npm run pack:cli`.
+Check the Rust release package with `npm run pack:cli`.
 
 ## License
 
