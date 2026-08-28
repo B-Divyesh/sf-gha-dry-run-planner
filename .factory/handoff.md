@@ -55,7 +55,12 @@ Deploy the static output at `dist/site` through the configured static work
 order. The deploy is triggered by pushing `main`; no credentials or external
 service configuration are stored in this repository.
 
+`main` was pushed to `origin` at `ee5fbb1`. At the final poll during this
+handoff, the public endpoint still served the prior release, so factory
+propagation remains pending outside this repository.
+
 ## Known gaps
 
 No product blocking findings remain. Lighthouse score collection is limited by
-the worker container’s Chrome launcher, not by a failing page check.
+the worker container’s Chrome launcher, not by a failing page check. Public
+deployment propagation is pending the factory worker after the completed push.
