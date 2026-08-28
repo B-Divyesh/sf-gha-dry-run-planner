@@ -13,6 +13,7 @@
     "build": "cargo build --release && npm run build:site",
     "preview": "vite preview --config site/vite.config.ts",
     "audit:a11y": "node scripts/a11y-audit.mjs http://127.0.0.1:4173",
+    "audit:live": "node scripts/live-audit.mjs https://gha-dry-run-planner.sociobot.in .factory/evidence/polish-3",
     "pack:cli": "cargo package --allow-dirty"
   },
   "dependencies": {

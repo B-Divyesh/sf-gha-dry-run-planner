@@ -1,0 +1,16 @@
+{
+  "url": "https://gha-dry-run-planner.sociobot.in",
+  "routes": ["/", "/demo", "/privacy", "/terms", "/404.html", "/not-a-real-route"],
+  "themes": ["light", "dark with reduced motion"],
+  "seriousOrCritical": 0,
+  "h1PerRoute": 1,
+  "consoleErrors": [],
+  "horizontalOverflow": 0,
+  "offlineReload": true,
+  "mobileTargetHeights": {
+    "wordmark": 44,
+    "source": 44,
+    "expand": 44,
+    "copy": 76
+  }
+}

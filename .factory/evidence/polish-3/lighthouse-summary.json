@@ -1,0 +1,10 @@
+{
+  "url": "https://gha-dry-run-planner.sociobot.in/",
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "seo": 100,
+  "largestContentfulPaintMs": 1183.59,
+  "cumulativeLayoutShift": 0,
+  "totalBlockingTimeMs": 0
+}

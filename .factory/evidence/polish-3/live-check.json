@@ -1,0 +1,519 @@
+{
+  "checkedAt": "2026-08-28T12:35:38.017Z",
+  "base": "https://gha-dry-run-planner.sociobot.in",
+  "routeAudit": [
+    {
+      "route": "/",
+      "expectedStatus": 200,
+      "status": 200,
+      "title": "ghaplan — Plan GitHub Actions workflows",
+      "h1Count": 1,
+      "h1": "Plan a GitHub Actions workflow",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/",
+      "missingMetadata": [],
+      "header": [
+        "ghaplan|/",
+        "Demo|/demo",
+        "Planner|/#planner",
+        "Privacy|/privacy",
+        "Source ↗ (external link)|https://github.com/B-Divyesh/sf-gha-dry-run-planner"
+      ],
+      "footer": [
+        "Privacy|/privacy",
+        "Terms|/terms",
+        "Limits|/#limits"
+      ],
+      "footerText": "ghaplan Plan a GitHub Actions workflow before you push. PrivacyTermsLimits MIT licensed · Built by Param Factory · build polish-3 · © 2026",
+      "external": [
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner#install",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/issues",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/blob/main/LICENSE",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        }
+      ],
+      "undersized": [],
+      "overflow": 0,
+      "chromeMatchesHome": true,
+      "errors": []
+    },
+    {
+      "route": "/demo",
+      "expectedStatus": 200,
+      "status": 200,
+      "title": "Demo — ghaplan",
+      "h1Count": 1,
+      "h1": "Sample GitHub Actions workflow plan",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/demo",
+      "missingMetadata": [],
+      "header": [
+        "ghaplan|/",
+        "Demo|/demo",
+        "Planner|/#planner",
+        "Privacy|/privacy",
+        "Source ↗ (external link)|https://github.com/B-Divyesh/sf-gha-dry-run-planner"
+      ],
+      "footer": [
+        "Privacy|/privacy",
+        "Terms|/terms",
+        "Limits|/#limits"
+      ],
+      "footerText": "ghaplan Plan a GitHub Actions workflow before you push. PrivacyTermsLimits MIT licensed · Built by Param Factory · build polish-3 · © 2026",
+      "external": [
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner#install",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/issues",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/blob/main/LICENSE",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        }
+      ],
+      "undersized": [],
+      "overflow": 0,
+      "chromeMatchesHome": true,
+      "errors": []
+    },
+    {
+      "route": "/privacy",
+      "expectedStatus": 200,
+      "status": 200,
+      "title": "Privacy — ghaplan",
+      "h1Count": 1,
+      "h1": "Privacy for the workflow planner",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/privacy",
+      "missingMetadata": [],
+      "header": [
+        "ghaplan|/",
+        "Demo|/demo",
+        "Planner|/#planner",
+        "Privacy|/privacy",
+        "Source ↗ (external link)|https://github.com/B-Divyesh/sf-gha-dry-run-planner"
+      ],
+      "footer": [
+        "Privacy|/privacy",
+        "Terms|/terms",
+        "Limits|/#limits"
+      ],
+      "footerText": "ghaplan Plan a GitHub Actions workflow before you push. PrivacyTermsLimits MIT licensed · Built by Param Factory · build polish-3 · © 2026",
+      "external": [
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner#install",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/issues",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/blob/main/LICENSE",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        }
+      ],
+      "undersized": [],
+      "overflow": 0,
+      "chromeMatchesHome": true,
+      "errors": []
+    },
+    {
+      "route": "/terms",
+      "expectedStatus": 200,
+      "status": 200,
+      "title": "Terms — ghaplan",
+      "h1Count": 1,
+      "h1": "Terms for using ghaplan",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/terms",
+      "missingMetadata": [],
+      "header": [
+        "ghaplan|/",
+        "Demo|/demo",
+        "Planner|/#planner",
+        "Privacy|/privacy",
+        "Source ↗ (external link)|https://github.com/B-Divyesh/sf-gha-dry-run-planner"
+      ],
+      "footer": [
+        "Privacy|/privacy",
+        "Terms|/terms",
+        "Limits|/#limits"
+      ],
+      "footerText": "ghaplan Plan a GitHub Actions workflow before you push. PrivacyTermsLimits MIT licensed · Built by Param Factory · build polish-3 · © 2026",
+      "external": [
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner#install",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/issues",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        },
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/blob/main/LICENSE",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        }
+      ],
+      "undersized": [],
+      "overflow": 0,
+      "chromeMatchesHome": true,
+      "errors": []
+    },
+    {
+      "route": "/404.html",
+      "expectedStatus": 404,
+      "status": 404,
+      "title": "Page not found — ghaplan",
+      "h1Count": 1,
+      "h1": "This workflow path does not exist",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/404.html",
+      "missingMetadata": [],
+      "header": [
+        "ghaplan|/",
+        "Demo|/demo",
+        "Planner|/#planner",
+        "Privacy|/privacy",
+        "Source ↗ (external link)|https://github.com/B-Divyesh/sf-gha-dry-run-planner"
+      ],
+      "footer": [
+        "Privacy|/privacy",
+        "Terms|/terms",
+        "Limits|/#limits"
+      ],
+      "footerText": "ghaplan Plan a GitHub Actions workflow before you push. PrivacyTermsLimits MIT licensed · Built by Param Factory · build polish-3 · © 2026",
+      "external": [
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        }
+      ],
+      "undersized": [],
+      "overflow": 0,
+      "chromeMatchesHome": true,
+      "errors": []
+    },
+    {
+      "route": "/not-a-real-route",
+      "expectedStatus": 404,
+      "status": 404,
+      "title": "Page not found — ghaplan",
+      "h1Count": 1,
+      "h1": "This workflow path does not exist",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/not-a-real-route",
+      "missingMetadata": [],
+      "header": [
+        "ghaplan|/",
+        "Demo|/demo",
+        "Planner|/#planner",
+        "Privacy|/privacy",
+        "Source ↗ (external link)|https://github.com/B-Divyesh/sf-gha-dry-run-planner"
+      ],
+      "footer": [
+        "Privacy|/privacy",
+        "Terms|/terms",
+        "Limits|/#limits"
+      ],
+      "footerText": "ghaplan Plan a GitHub Actions workflow before you push. PrivacyTermsLimits MIT licensed · Built by Param Factory · build polish-3 · © 2026",
+      "external": [
+        {
+          "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+          "classed": true,
+          "hasVisibleMark": true,
+          "hasScreenReaderLabel": true
+        }
+      ],
+      "undersized": [],
+      "overflow": 0,
+      "chromeMatchesHome": true,
+      "errors": []
+    }
+  ],
+  "firstScreens": {
+    "mobileHome": {
+      "heading": "Plan a GitHub Actions workflow",
+      "action": "Try it with sample data",
+      "facts": "Workflow text stays in this browser.Works offline after the first load.Free to use. No account.",
+      "actionBox": {
+        "top": 450,
+        "bottom": 498
+      },
+      "factsBox": {
+        "top": 610,
+        "bottom": 685
+      },
+      "summaryBox": null,
+      "firstJobBox": null,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    "desktopHome": {
+      "heading": "Plan a GitHub Actions workflow",
+      "action": "Try it with sample data",
+      "facts": "Workflow text stays in this browser.Works offline after the first load.Free to use. No account.",
+      "actionBox": {
+        "top": 552,
+        "bottom": 600
+      },
+      "factsBox": {
+        "top": 654,
+        "bottom": 729
+      },
+      "summaryBox": null,
+      "firstJobBox": null,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "mobileDemo": {
+      "heading": "Sample GitHub Actions workflow plan",
+      "action": "Try it with sample data",
+      "facts": "Workflow text stays in this browser.Works offline after the first load.Free to use. No account.",
+      "summary": "Workflow RUN·2 jobs·4 cells·8 steps",
+      "firstJob": "Quality · ${{ matrix.node }} qualityJob if evaluated to true.",
+      "actionBox": null,
+      "factsBox": null,
+      "summaryBox": {
+        "top": 456,
+        "bottom": 486
+      },
+      "firstJobBox": {
+        "top": 567,
+        "bottom": 642
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    "desktopDemo": {
+      "heading": "Sample GitHub Actions workflow plan",
+      "action": "Try it with sample data",
+      "facts": "Workflow text stays in this browser.Works offline after the first load.Free to use. No account.",
+      "summary": "Workflow RUN·2 jobs·4 cells·8 steps",
+      "firstJob": "Quality · ${{ matrix.node }} qualityJob if evaluated to true.",
+      "actionBox": null,
+      "factsBox": null,
+      "summaryBox": {
+        "top": 503,
+        "bottom": 546
+      },
+      "firstJobBox": {
+        "top": 616,
+        "bottom": 662
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    }
+  },
+  "demo": {
+    "queryEntry": {
+      "path": "/?demo=1",
+      "title": "Demo — ghaplan",
+      "bannerVisible": true,
+      "summary": "Workflow RUN·2 jobs·4 cells·8 steps"
+    },
+    "requestsAfterLoad": [],
+    "editedStorage": {
+      "demo:workflow-source": "name: Demo edit\non: push\njobs: {}",
+      "real:sentinel": "untouched"
+    },
+    "resetRestoredSample": true,
+    "exitState": {
+      "path": "/",
+      "bannerHidden": true,
+      "demoValue": null,
+      "realSentinel": "untouched"
+    }
+  },
+  "focus": {
+    "privacyFocus": "Privacy for the workflow planner",
+    "backFocus": "Plan a GitHub Actions workflow"
+  },
+  "crawl": {
+    "links": [
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/demo",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/privacy",
+        "status": 200
+      },
+      {
+        "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+        "status": 200
+      },
+      {
+        "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner",
+        "status": 200
+      },
+      {
+        "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/issues",
+        "status": 200
+      },
+      {
+        "href": "https://github.com/B-Divyesh/sf-gha-dry-run-planner/blob/main/LICENSE",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/terms",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/demo",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/privacy",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/terms",
+        "status": 200
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/404.html",
+        "status": 404
+      }
+    ],
+    "fragments": [
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/#main",
+        "found": true
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/#planner",
+        "found": true
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/#limits",
+        "found": true
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/demo#main",
+        "found": true
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/privacy#main",
+        "found": true
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/terms#main",
+        "found": true
+      },
+      {
+        "href": "https://gha-dry-run-planner.sociobot.in/404.html#main",
+        "found": true
+      }
+    ]
+  },
+  "deploymentParity": {
+    "indexMatches": true,
+    "notFoundMatches": true,
+    "assets": [
+      {
+        "path": "/assets/main-C0kee5Fh.js",
+        "matches": true,
+        "bytes": 64629
+      },
+      {
+        "path": "/assets/chrome-g-BuOl_n.js",
+        "matches": true,
+        "bytes": 2020
+      },
+      {
+        "path": "/assets/chrome-DhaDR-Dt.css",
+        "matches": true,
+        "bytes": 17197
+      },
+      {
+        "path": "/assets/hero-ceramic.webp",
+        "matches": true,
+        "bytes": 85308
+      },
+      {
+        "path": "/assets/404-BlinJvDl.js",
+        "matches": true,
+        "bytes": 217
+      }
+    ]
+  }
+}
