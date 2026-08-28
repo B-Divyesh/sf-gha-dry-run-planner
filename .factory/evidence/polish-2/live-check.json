@@ -1,0 +1,153 @@
+{
+  "routes": {
+    "/": {
+      "status": 200,
+      "title": "ghaplan — Plan GitHub Actions workflows",
+      "h1": [
+        "Plan a GitHub Actions workflow"
+      ],
+      "description": "Plan a GitHub Actions workflow before you push. See which jobs and steps will run or skip in your browser.",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/",
+      "bannerVisible": 0
+    },
+    "/demo": {
+      "status": 200,
+      "title": "Demo — ghaplan",
+      "h1": [
+        "Sample GitHub Actions workflow plan"
+      ],
+      "description": "Try a sample GitHub Actions workflow plan in an isolated demo.",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/demo",
+      "bannerVisible": 1
+    },
+    "/privacy": {
+      "status": 200,
+      "title": "Privacy — ghaplan",
+      "h1": [
+        "Privacy for the workflow planner"
+      ],
+      "description": "Read how ghaplan handles workflow text and demo storage.",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/privacy",
+      "bannerVisible": 0
+    },
+    "/terms": {
+      "status": 200,
+      "title": "Terms — ghaplan",
+      "h1": [
+        "Terms for using ghaplan"
+      ],
+      "description": "Read the terms for using the ghaplan workflow planner.",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/terms",
+      "bannerVisible": 0
+    },
+    "/not-a-real-route": {
+      "status": 404,
+      "title": "Page not found — ghaplan",
+      "h1": [
+        "This workflow path does not exist"
+      ],
+      "description": "Return to the ghaplan GitHub Actions workflow planner.",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/404.html",
+      "bannerVisible": 0
+    },
+    "/404.html": {
+      "status": 404,
+      "title": "Page not found — ghaplan",
+      "h1": [
+        "This workflow path does not exist"
+      ],
+      "description": "Return to the ghaplan GitHub Actions workflow planner.",
+      "canonical": "https://gha-dry-run-planner.sociobot.in/404.html",
+      "bannerVisible": 0
+    }
+  },
+  "viewports": {
+    "mobile": {
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "summary": {
+        "x": 29,
+        "y": 456.203125,
+        "width": 332,
+        "height": 30.046875
+      },
+      "job": {
+        "x": 99,
+        "y": 567.234375,
+        "width": 262,
+        "height": 75.1875
+      },
+      "inViewport": true
+    },
+    "desktop": {
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "summary": {
+        "x": 101,
+        "y": 503.3125,
+        "width": 1238,
+        "height": 43.140625
+      },
+      "job": {
+        "x": 183,
+        "y": 616.453125,
+        "width": 1156,
+        "height": 46
+      },
+      "inViewport": true
+    }
+  },
+  "storage": {
+    "afterEdit": {
+      "real:workflow-source": "sentinel",
+      "demo:workflow-source": "name: Demo edit\non: push\njobs: {}"
+    },
+    "afterExit": {
+      "real:workflow-source": "sentinel"
+    },
+    "bannerAfterExit": 0
+  },
+  "focus": {
+    "privacy": "Privacy for the workflow planner",
+    "home": "Plan a GitHub Actions workflow",
+    "forward": "Privacy for the workflow planner"
+  },
+  "network": {
+    "planningRequests": [],
+    "onlySameOrigin": true
+  },
+  "offline": true,
+  "axe": {
+    "/:light": [],
+    "/:dark": [],
+    "/demo:light": [],
+    "/demo:dark": [],
+    "/privacy:light": [],
+    "/privacy:dark": [],
+    "/terms:light": [],
+    "/terms:dark": [],
+    "/not-a-real-route:light": [],
+    "/not-a-real-route:dark": [],
+    "/404.html:light": [],
+    "/404.html:dark": []
+  },
+  "consoleErrors": [],
+  "expected404Console": [
+    "/not-a-real-route: Failed to load resource: the server responded with a status of 404 ()",
+    "/404.html: Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "touch": {
+    "/": [],
+    "/demo": [],
+    "/privacy": [],
+    "/terms": [],
+    "/not-a-real-route": [],
+    "/404.html": []
+  }
+}
