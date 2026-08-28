@@ -9,7 +9,11 @@ const browser = await chromium.launch(existsSync(fleetChromium) ? { executablePa
 const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
 const page = await context.newPage();
 const errors = [];
-page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+page.on('console', message => {
+  const expectedNotFoundResponse = message.text().includes('Failed to load resource: the server responded with a status of 404')
+    && ['/404.html', '/not-a-real-route'].includes(new URL(page.url()).pathname);
+  if (message.type() === 'error' && !expectedNotFoundResponse) errors.push(message.text());
+});
 page.on('pageerror', error => errors.push(String(error)));
 await page.goto(`${base}/demo`, { waitUntil: 'networkidle' });
 await page.getByRole('button', { name: /Show this workflow/ }).click();
