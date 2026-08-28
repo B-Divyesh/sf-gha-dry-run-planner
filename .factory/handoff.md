@@ -38,7 +38,8 @@ and terminology audit is in `.factory/copy-audit.md`.
 
 ## Verification evidence
 
-Clean clone: `/tmp/ghaplan-polish2-clean-20260828`.
+Clean clone: `/tmp/ghaplan-polish2-final-20260828` at documentation commit
+`65d69e0` (which contains repair commits `4ad768e` and `4569a62`).
 
 - Every one of the 19 `.factory/claims.json` commands ran independently and
   passed.

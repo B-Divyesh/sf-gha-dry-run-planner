@@ -51,7 +51,7 @@ Evidence screenshots:
 | C9 | The long capability sentence is now two sentences of 11 and 12 words. | `.factory/copy-audit.md`. |
 | C10 | Terminal copy uses “Run the same check in scripts, hooks, or an editor.” | `@claim:cli-input`; live terminal section. |
 | C11 | The retained JSON action now has a registered clipboard outcome test. | `@claim:json-export`. |
-| C12–C15 | README introduction, audience, status-check explanation, and feature coverage remain split into short plain sentences. | `.factory/copy-audit.md`; no sentence over 22 words. |
+| C12–C15 | Replaced the long README introduction and audience sentences; removed the dense status-check and feature-dump prose from the README. | `.factory/copy-audit.md`; no sentence over 22 words. |
 | C16 | Primary planner control remains **Show this workflow’s plan**. | Browser planner tests. |
 | C17 | Export control remains **Copy workflow plan as JSON**. | `@claim:json-export`. |
 | C18 | YAML failures say what failed and instruct the visitor to fix the error and plan again. | Engine YAML unit test; rendered error copy audit. |
